@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://apofiz.com">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/apofiz-wordmark-white.png">
-      <img src="assets/apofiz-wordmark-black.png" alt="Apofiz" height="56">
+      <source media="(prefers-color-scheme: dark)" srcset="assets/apofiz-logo-white.png">
+      <img src="assets/apofiz-logo-black.png" alt="Apofiz" height="64">
     </picture>
   </a>
 </p>
@@ -16,6 +16,25 @@
 </p>
 
 ---
+
+## Website & preview
+
+**Live site:** https://blobus01.github.io/GTA6-PS5-AI-by-Apofiz/ · **Single-file HTML** (works offline): [`site/GTA6-PS5-AI-by-Apofiz.html`](site/GTA6-PS5-AI-by-Apofiz.html)
+
+<p align="center"><a href="https://blobus01.github.io/GTA6-PS5-AI-by-Apofiz/"><img src="assets/preview/hero.jpg" alt="GTA6 PS5 AI by Apofiz — website" width="100%"></a></p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="assets/preview/gamepad.jpg" alt="Interactive DualSense: every control the bot knows"></td>
+    <td width="50%"><img src="assets/preview/download.jpg" alt="One-click download for Mac and Windows"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Interactive gamepad — every control the bot knows (RU/EN)</sub></td>
+    <td align="center"><sub>Download for Mac &amp; Windows, PS5 permissions checklist</sub></td>
+  </tr>
+</table>
+
+<p align="center"><img src="assets/preview/mobile.jpg" alt="Mobile version" width="260"><br><sub>Mobile, dark/light, auto language</sub></p>
 
 ## What it does
 
@@ -100,4 +119,4 @@ Early and experimental. Works: console control, map waypoints, car approach, Sli
 
 > Grand Theft Auto VI is a trademark of Rockstar Games / Take-Two Interactive. PlayStation and PS5 are trademarks of Sony Interactive Entertainment. This project is not affiliated with or endorsed by them. Use it only with your own console and your own copy of the game.
 
-<p align="center"><a href="https://apofiz.com"><img src="assets/apofiz-mark.png" alt="Apofiz" height="40"></a><br><sub>Made with ❤️ by <a href="https://apofiz.com">Apofiz</a></sub></p>
+<p align="center"><a href="https://apofiz.com"><img src="assets/apofiz-mark-transparent.png" alt="Apofiz" height="44"></a><br><sub>Made with ❤️ by <a href="https://apofiz.com">Apofiz</a></sub></p>
