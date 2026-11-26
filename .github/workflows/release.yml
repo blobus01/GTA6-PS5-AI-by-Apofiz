@@ -223,7 +223,11 @@ jobs:
 
   release:
     needs: [version, mac, windows]
+    # publish whatever platforms built (a failed Windows build must not block the Mac release)
     if: >-
+      always() &&
+      needs.version.result == 'success' &&
+      (needs.mac.result == 'success' || needs.windows.result == 'success') &&
       startsWith(github.ref, 'refs/tags/v') &&
       (github.event_name == 'push' || inputs.publish)
     runs-on: ubuntu-latest

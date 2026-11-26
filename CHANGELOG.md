@@ -7,7 +7,7 @@ heading format `## [X.Y.Z] - YYYY-MM-DD`.
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-26
+## [0.2.0] - 2026-11-26
 
 First public build.
 

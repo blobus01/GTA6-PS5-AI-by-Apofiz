@@ -1,0 +1,5 @@
+# Extra packages for the Windows installer, on top of ../../requirements.txt and
+# ../../launcher/requirements.txt. torch/torchvision are installed first by
+# build.ps1 from the PyTorch index (CPU by default, CUDA with -Cuda).
+ultralytics>=8.3
+numpy>=1.26
