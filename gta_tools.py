@@ -13,7 +13,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-LOG = Path(__file__).resolve().parent / "logs" / "agent.jsonl"
+from paths import LOG_DIR
+LOG = LOG_DIR / "agent.jsonl"
 MAX_S = 5.0
 
 

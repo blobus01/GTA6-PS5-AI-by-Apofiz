@@ -27,7 +27,7 @@ ROOT = Path(__file__).parent
 
 def _load_env_local() -> None:
     """Read KEY=value lines from .env.local unless already in the environment."""
-    path = ROOT / ".env.local"
+    from paths import ENV_LOCAL as path
     if not path.exists():
         return
     for line in path.read_text(encoding="utf-8").splitlines():

@@ -97,13 +97,19 @@ class _Proc:
 
     def __init__(self, model, system, effort):
         env = dict(os.environ, MAX_THINKING_TOKENS="0")
-        cmd = ["claude", "-p", "--model", model, "--input-format", "stream-json", "--output-format", "stream-json",
-               "--verbose", "--system-prompt", system, "--tools", "", "--strict-mcp-config",
+        import shutil, tempfile
+        claude = shutil.which("claude") or "claude"   # npm on Windows installs claude.cmd
+        # system prompt via file: cmd.exe limits a .cmd call to 8191 chars
+        spf = os.path.join(tempfile.gettempdir(), "apofiz_brain_system.txt")
+        with open(spf, "w", encoding="utf-8") as f:
+            f.write(system)
+        cmd = [claude, "-p", "--model", model, "--input-format", "stream-json", "--output-format", "stream-json",
+               "--verbose", "--system-prompt-file", spf, "--tools", "", "--strict-mcp-config",
                "--setting-sources", "", "--disable-slash-commands", "--no-session-persistence"]
         if effort:
             cmd += ["--effort", effort]
         self.p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                  text=True, bufsize=1, env=env, cwd=HERE)
+                                  text=True, encoding="utf-8", errors="replace", bufsize=1, env=env, cwd=HERE)
         self.q = queue.Queue()
         self.n = 0
         threading.Thread(target=self._read, daemon=True).start()
@@ -192,8 +198,9 @@ class Brain:
     def _log(self, ev, dt, nbytes):
         try:
             u = ev.get("usage") or {}
-            os.makedirs(os.path.join(HERE, "logs"), exist_ok=True)
-            with open(os.path.join(HERE, "logs", "tokens.jsonl"), "a") as f:
+            from paths import LOG_DIR
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+            with open(LOG_DIR / "tokens.jsonl", "a", encoding="utf-8") as f:
                 f.write(json.dumps({"t": time.time(), "model": self.model,
                                     "latency": round(dt, 2), "img_bytes": nbytes,
                                     "thinking": (u.get("output_tokens_details") or {}).get("thinking_tokens"),

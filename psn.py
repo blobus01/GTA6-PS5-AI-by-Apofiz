@@ -14,7 +14,7 @@ from pathlib import Path
 from psnawp_api import PSNAWP
 from psnawp_api.models.search.games_search_datatypes import SearchDomain
 
-ENV_LOCAL = Path(__file__).parent / ".env.local"
+from paths import ENV_LOCAL  # data dir when installed, code dir in dev
 LIBRARY_TTL_S = 1800
 
 

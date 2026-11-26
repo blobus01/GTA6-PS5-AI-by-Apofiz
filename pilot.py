@@ -19,13 +19,36 @@ HZ = 15
 _yolo = None
 
 
+_DEV = None
+
+
+def _yolo_device():
+    """mps on Apple Silicon, CUDA on NVIDIA, otherwise CPU (Windows/Linux without GPU)."""
+    global _DEV
+    if _DEV is None:
+        import sys
+        try:
+            import torch
+            if sys.platform == "darwin" and torch.backends.mps.is_available():
+                _DEV = "mps"
+            elif torch.cuda.is_available():
+                _DEV = 0
+            else:
+                _DEV = "cpu"
+        except Exception:
+            _DEV = "cpu"
+    return _DEV
+
+
 def detect(rgb):
     """YOLO: машины и люди на кадре. -> list of (cls, cx, cy, w, h, conf) в долях кадра."""
     global _yolo
     if _yolo is None:
         from ultralytics import YOLO
-        _yolo = YOLO("yolo11n.pt")
-    r = _yolo.predict(rgb, device="mps", verbose=False, conf=0.35, imgsz=640)[0]
+        import sys as _sys
+        from pathlib import Path as _P
+        _yolo = YOLO(str(_P(__file__).resolve().parent / "yolo11n.pt"))
+    r = _yolo.predict(rgb, device=_yolo_device(), verbose=False, conf=0.35, imgsz=640)[0]
     out = []
     H, W = rgb.shape[:2]
     for (x1, y1, x2, y2), c, p in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist(), r.boxes.conf.tolist()):

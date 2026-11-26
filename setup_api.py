@@ -50,9 +50,10 @@ import store
 
 ROOT = Path(__file__).parent
 WEB = ROOT / "web" / "setup"
-ENV_LOCAL = ROOT / ".env.local"
+from paths import ENV_LOCAL, LOG_DIR
+# (installed app writes into the data dir; dev checkout keeps files next to the code)
 SETUP_FILE = store.HOME / "setup.json"
-AGENT_LOG = ROOT / "logs" / "setup-agent.log"
+AGENT_LOG = LOG_DIR / "setup-agent.log"
 MOCK = os.environ.get("PS5_SETUP_MOCK") == "1"
 IS_WIN = os.name == "nt"
 IS_MAC = sys.platform == "darwin"
@@ -172,7 +173,7 @@ def _iface_for(host: str | None) -> dict:
             out["kind"] = "vpn"
     elif IS_WIN:
         target = host or "8.8.8.8"
-        ps = ("$r=Find-NetRoute -RemoteIPAddress '%s' -ErrorAction SilentlyContinue | Where-Object InterfaceAlias | "
+        ps = ("[Console]::OutputEncoding=[Text.Encoding]::UTF8; $r=Find-NetRoute -RemoteIPAddress '%s' -ErrorAction SilentlyContinue | Where-Object InterfaceAlias | "
               "Select-Object -First 1; if($r){$a=Get-NetAdapter -InterfaceIndex $r.InterfaceIndex; "
               "ConvertTo-Json @{alias=$a.Name; media=[string]$a.PhysicalMediaType; desc=$a.InterfaceDescription}}" % target)
         rc, text = _run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], 12)
