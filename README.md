@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://apofiz.com">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/apofiz-logo-white.png">
-      <img src="assets/apofiz-logo-black.png" alt="Apofiz" height="64">
+      <source media="(prefers-color-scheme: dark)" srcset="assets/apofiz-x-gta6-white.png">
+      <img src="assets/apofiz-x-gta6-black.png" alt="Apofiz ⇄ GTA VI" height="110">
     </picture>
   </a>
 </p>
@@ -19,22 +19,10 @@
 
 ## Website & preview
 
-**Live site:** https://blobus01.github.io/GTA6-PS5-AI-by-Apofiz/ · **Single-file HTML** (works offline): [`site/GTA6-PS5-AI-by-Apofiz.html`](site/GTA6-PS5-AI-by-Apofiz.html)
+**Live site:** https://blobus01.github.io/GTA6-PS5-AI-by-Apofiz/
 
 <p align="center"><a href="https://blobus01.github.io/GTA6-PS5-AI-by-Apofiz/"><img src="assets/preview/hero.jpg" alt="GTA6 PS5 AI by Apofiz — website" width="100%"></a></p>
 
-<table>
-  <tr>
-    <td width="50%"><img src="assets/preview/gamepad.jpg" alt="Interactive DualSense: every control the bot knows"></td>
-    <td width="50%"><img src="assets/preview/download.jpg" alt="One-click download for Mac and Windows"></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Interactive gamepad — every control the bot knows (RU/EN)</sub></td>
-    <td align="center"><sub>Download for Mac &amp; Windows, PS5 permissions checklist</sub></td>
-  </tr>
-</table>
-
-<p align="center"><img src="assets/preview/mobile.jpg" alt="Mobile version" width="260"><br><sub>Mobile, dark/light, auto language</sub></p>
 
 ## What it does
 
