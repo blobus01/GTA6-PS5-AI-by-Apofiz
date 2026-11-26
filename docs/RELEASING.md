@@ -20,7 +20,7 @@ auto-updater finds them on GitHub Releases.
    ```
    The tag must equal `v` + the content of `VERSION`, otherwise CI stops.
 5. **CI** (`.github/workflows/release.yml`) runs:
-   - `mac` on `macos-14` (arm64): `packaging/mac/build_dmg.sh` →
+   - `mac` on `macos-15` (arm64): `packaging/mac/build_dmg.sh` →
      `dist/ApofizPlay-GTA6-<VERSION>-mac-arm64.dmg`, optional codesign +
      notarization, then a `.sha256` file;
    - `windows` on `windows-latest`: `packaging/windows/build.ps1` →

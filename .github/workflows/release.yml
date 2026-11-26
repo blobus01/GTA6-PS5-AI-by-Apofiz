@@ -62,7 +62,7 @@ jobs:
 
   mac:
     needs: version
-    runs-on: macos-14   # Apple Silicon (arm64)
+    runs-on: macos-15   # Apple Silicon (arm64)
     env:
       VERSION: ${{ needs.version.outputs.version }}
       APOFIZ_BUILD_CACHE: ${{ github.workspace }}/.build-cache
