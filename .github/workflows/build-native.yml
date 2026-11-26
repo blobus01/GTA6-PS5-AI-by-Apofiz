@@ -64,4 +64,10 @@ jobs:
         run: |
           $sha = (Get-Content native/ps5bridge.dll.sha256).Split(' ')[0]
           $notes = "Download ps5bridge.dll into the native folder (see docs/01-install.md).`n`nps5bridge.dll SHA-256: $sha`n`nBuilt by GitHub Actions from this tag with tools/build_native.py (chiaki-ng v1.10.0, Mbed TLS 2.28.10)."
-          gh release create $env:GITHUB_REF_NAME native/ps5bridge.dll native/ps5bridge.dll.sha256 --title $env:GITHUB_REF_NAME --notes $notes
+          # release.yml may have created the release already — then just attach the DLL
+          gh release view $env:GITHUB_REF_NAME *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:GITHUB_REF_NAME native/ps5bridge.dll native/ps5bridge.dll.sha256 --clobber
+          } else {
+            gh release create $env:GITHUB_REF_NAME native/ps5bridge.dll native/ps5bridge.dll.sha256 --title $env:GITHUB_REF_NAME --notes $notes
+          }

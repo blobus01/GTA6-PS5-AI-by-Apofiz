@@ -1,0 +1,292 @@
+name: release
+
+# Builds the ApofizPlay GTA6 installers and publishes them as a GitHub Release.
+#
+#   push tag vX.Y.Z      -> build mac + windows, publish release vX.Y.Z (pre-release if X.Y.Z-suffix)
+#   workflow_dispatch    -> build both and keep them as workflow artifacts;
+#                           publishes only when "publish" is ticked and the ref is a v* tag
+#
+# Assets (the names apofiz_update.py looks for):
+#   ApofizPlay-GTA6-<VERSION>-mac-arm64.dmg        + .sha256
+#   ApofizPlay-GTA6-<VERSION>-win-x64-Setup.exe    + .sha256
+#
+# Signing is optional: each signing step runs only when its secrets exist.
+#   macOS:   APPLE_CERT_P12_BASE64, APPLE_CERT_PASSWORD, APPLE_SIGN_IDENTITY,
+#            APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD (notarization)
+#   Windows: WIN_SIGN_PFX_BASE64, WIN_SIGN_PASSWORD
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish a GitHub Release (only when run on a v* tag)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.12"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        name: Resolve version (tag must match VERSION file)
+        shell: bash
+        run: |
+          file_version="$(tr -d ' \r\n' < VERSION)"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            tag_version="${GITHUB_REF_NAME#v}"
+            if [[ "$tag_version" != "$file_version" ]]; then
+              echo "::error::Tag $GITHUB_REF_NAME does not match VERSION file ($file_version). Bump VERSION, commit, then tag."
+              exit 1
+            fi
+          fi
+          echo "version=$file_version" >> "$GITHUB_OUTPUT"
+          if [[ "$file_version" == *-* ]]; then echo "prerelease=true"; else echo "prerelease=false"; fi >> "$GITHUB_OUTPUT"
+          echo "Version: $file_version"
+
+  mac:
+    needs: version
+    runs-on: macos-14   # Apple Silicon (arm64)
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      APOFIZ_BUILD_CACHE: ${{ github.workspace }}/.build-cache
+      APPLE_CERT_P12_BASE64: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+      APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+      APPLE_SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Cache build downloads (python-build-standalone etc.)
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.APOFIZ_BUILD_CACHE }}
+          key: build-cache-mac-arm64-${{ hashFiles('packaging/mac/**', 'requirements*.txt') }}
+          restore-keys: build-cache-mac-arm64-
+
+      - name: Import signing certificate
+        if: env.APPLE_CERT_P12_BASE64 != '' && env.APPLE_SIGN_IDENTITY != ''
+        run: |
+          keychain="$RUNNER_TEMP/build.keychain-db"
+          kc_pass="$(uuidgen)"
+          echo "$APPLE_CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$kc_pass" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$kc_pass" "$keychain"
+          security import "$RUNNER_TEMP/cert.p12" -P "$APPLE_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$kc_pass" "$keychain"
+          security list-keychains -d user -s "$keychain" login.keychain-db
+          rm -f "$RUNNER_TEMP/cert.p12"
+          echo "APOFIZ_CODESIGN=1" >> "$GITHUB_ENV"
+
+      - name: Build DMG
+        run: bash packaging/mac/build_dmg.sh
+
+      - name: Locate DMG
+        id: dmg
+        run: |
+          dmg="dist/ApofizPlay-GTA6-${VERSION}-mac-arm64.dmg"
+          if [[ ! -f "$dmg" ]]; then
+            echo "::error::Expected $dmg from packaging/mac/build_dmg.sh"; ls -la dist || true; exit 1
+          fi
+          echo "path=$dmg" >> "$GITHUB_OUTPUT"
+
+      - name: Sign DMG
+        if: env.APOFIZ_CODESIGN == '1'
+        run: codesign --force --timestamp --sign "$APPLE_SIGN_IDENTITY" "${{ steps.dmg.outputs.path }}"
+
+      - name: Notarize DMG
+        if: env.APOFIZ_CODESIGN == '1' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+        run: |
+          xcrun notarytool submit "${{ steps.dmg.outputs.path }}" \
+            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple "${{ steps.dmg.outputs.path }}"
+
+      - name: SHA-256
+        run: |
+          cd dist
+          f="$(basename "${{ steps.dmg.outputs.path }}")"
+          shasum -a 256 "$f" > "$f.sha256"
+          cat "$f.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-arm64
+          if-no-files-found: error
+          path: |
+            ${{ steps.dmg.outputs.path }}
+            ${{ steps.dmg.outputs.path }}.sha256
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      APOFIZ_BUILD_CACHE: ${{ github.workspace }}\.build-cache
+      WIN_SIGN_PFX_BASE64: ${{ secrets.WIN_SIGN_PFX_BASE64 }}
+      WIN_SIGN_PASSWORD: ${{ secrets.WIN_SIGN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Cache build downloads (python-build-standalone etc.)
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.APOFIZ_BUILD_CACHE }}
+          key: build-cache-win-x64-${{ hashFiles('packaging/windows/**', 'requirements*.txt') }}
+          restore-keys: build-cache-win-x64-
+
+      - name: Prepare signing certificate
+        if: env.WIN_SIGN_PFX_BASE64 != ''
+        shell: pwsh
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "sign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WIN_SIGN_PFX_BASE64))
+          "WIN_SIGN_PFX=$pfx" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build installer
+        shell: pwsh
+        run: ./packaging/windows/build.ps1
+
+      - name: Locate installer
+        id: exe
+        shell: pwsh
+        run: |
+          $exe = "dist/ApofizPlay-GTA6-$($env:VERSION)-win-x64-Setup.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Output "::error::Expected $exe from packaging/windows/build.ps1"
+            Get-ChildItem dist -ErrorAction SilentlyContinue
+            exit 1
+          }
+          "path=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Sign installer
+        if: env.WIN_SIGN_PFX != ''
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool.FullName sign /f $env:WIN_SIGN_PFX /p $env:WIN_SIGN_PASSWORD `
+            /fd sha256 /tr http://timestamp.digicert.com /td sha256 "${{ steps.exe.outputs.path }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: SHA-256
+        shell: pwsh
+        run: |
+          $exe = "${{ steps.exe.outputs.path }}"
+          $name = Split-Path $exe -Leaf
+          $sha = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          "$sha  $name" | Out-File -Encoding ascii -NoNewline "$exe.sha256"
+          "SHA-256: $sha"
+
+      - name: Remove signing certificate
+        if: always() && env.WIN_SIGN_PFX != ''
+        shell: pwsh
+        run: Remove-Item -Force $env:WIN_SIGN_PFX -ErrorAction SilentlyContinue
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          if-no-files-found: error
+          path: |
+            ${{ steps.exe.outputs.path }}
+            ${{ steps.exe.outputs.path }}.sha256
+
+  release:
+    needs: [version, mac, windows]
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') &&
+      (github.event_name == 'push' || inputs.publish)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      PRERELEASE: ${{ needs.version.outputs.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Verify checksums
+        run: cd dist && ls -la && sha256sum -c ./*.sha256
+
+      # The website links to releases/latest/download/<version-less name>; publish aliases (+ their own .sha256).
+      - name: Version-less aliases for the website
+        run: |
+          cd dist
+          for f in ApofizPlay-GTA6-"$VERSION"-mac-arm64.dmg ApofizPlay-GTA6-"$VERSION"-win-x64-Setup.exe; do
+            [ -f "$f" ] || continue
+            alias="${f/-$VERSION/}"
+            cp "$f" "$alias"
+            sha256sum "$alias" > "$alias.sha256"
+          done
+          ls -la
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          python3 - <<'PY'
+          import os, re, pathlib
+          version = os.environ["VERSION"]
+          text = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          # Section starts at "## [X.Y.Z]" (or "## X.Y.Z") and runs to the next "## ".
+          pat = re.compile(r"^## \[?v?" + re.escape(version) + r"\]?[^\n]*\n(.*?)(?=^## |\Z)", re.M | re.S)
+          m = pat.search(text)
+          if m and m.group(1).strip():
+              body = m.group(1).strip()
+          else:
+              print(f"::warning::No CHANGELOG.md section for {version}")
+              body = f"ApofizPlay GTA6 {version}."
+          body += "\n\n---\nInstallers: `*-mac-arm64.dmg` (macOS, Apple Silicon), `*-win-x64-Setup.exe` (Windows). Each has a `.sha256` checksum; the app's auto-updater verifies it before installing."
+          pathlib.Path("release-notes.md").write_text(body + "\n", encoding="utf-8")
+          print(body)
+          PY
+
+      - name: Publish GitHub Release
+        run: |
+          tag="$GITHUB_REF_NAME"
+          files=(dist/ApofizPlay-GTA6-*)
+          pre=()
+          [[ "$PRERELEASE" == "true" ]] && pre=(--prerelease)
+          # build-native.yml may have created this release already (it also runs on v* tags).
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "${files[@]}" --clobber
+            gh release edit "$tag" --title "ApofizPlay GTA6 $VERSION" --notes-file release-notes.md "${pre[@]}"
+          else
+            gh release create "$tag" "${files[@]}" --title "ApofizPlay GTA6 $VERSION" \
+              --notes-file release-notes.md --verify-tag "${pre[@]}"
+          fi

@@ -48,7 +48,29 @@ PS5 ──Remote Play──► server.py (chiaki-ng bridge, 127.0.0.1:8765)
 | `controls_gta6.md`, `knowledge/` | Controls cheat-sheet and full knowledge base |
 | `mcp_server.py` | MCP tools so any agent (Claude Code etc.) can drive the PS5 |
 
-## Quick start (macOS, Apple Silicon)
+## Download
+
+| Platform | Download |
+|---|---|
+| macOS, Apple Silicon (M1 and newer) | [**ApofizPlay-GTA6-mac-arm64.dmg**](https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz/releases/latest/download/ApofizPlay-GTA6-mac-arm64.dmg) |
+| Windows 10/11 x64 | [**ApofizPlay-GTA6-win-x64-Setup.exe**](https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz/releases/latest/download/ApofizPlay-GTA6-win-x64-Setup.exe) |
+| Anything else | [All releases](https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz/releases/latest) or [build from source](#build-from-source) |
+
+Open the app and the setup wizard finds your PS5 on the network, signs you in to PSN and links the console. Then pick a goal and the bot plays.
+
+### Before you start: allow these on your PS5
+
+Miss any one of these and the app can't connect:
+
+1. **Enable Remote Play:** Settings → System → Remote Play → *Enable Remote Play*.
+2. **Rest mode:** Settings → System → Power Saving → Features Available in Rest Mode → turn on *Stay Connected to the Internet* and *Enable Turning On PS5 from Network*.
+3. **Same PSN user:** the PS5 must have the same PSN account you sign in with in the app, and that user must be allowed Remote Play (family/child accounts: in parental controls). Otherwise you get error `0x80108b12`.
+4. **Link Device:** Settings → System → Remote Play → *Link Device* shows an 8-digit code; type it into the app's wizard. One time only; keys stay on your computer.
+
+### Build from source
+
+<details>
+<summary>macOS, Apple Silicon — five steps, about 20 minutes</summary>
 
 1. **PS5:** Settings → System → Remote Play → enable. Same home network as the Mac (cable recommended — Wi-Fi drops frames).
 2. **Install:**
@@ -63,6 +85,8 @@ PS5 ──Remote Play──► server.py (chiaki-ng bridge, 127.0.0.1:8765)
    ```bash
    .venv/bin/python agent.py car 10     # find & steal a car, then drive to the waypoint, for 10 minutes
    ```
+
+</details>
 
 ## Status
 

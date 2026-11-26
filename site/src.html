@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="ru" data-lang="ru" data-theme="dark">
+<script>(function(){try{var t=localStorage.getItem("gta6ai-theme")||"auto",l=localStorage.getItem("gta6ai-lang")||"auto",h=document.documentElement;if(t==="auto")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(l==="auto")l=(navigator.languages||[navigator.language]).some(function(x){return /^(ru|uk|be|kk)/i.test(x)})?"ru":"en";h.setAttribute("data-theme",t);h.setAttribute("data-lang",l);h.lang=l}catch(e){}})()</script>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GTA6 PS5 AI by Apofiz</title>
+<meta name="description" content="AI agent that plays GTA 6 on a real PS5 from your Mac. By Apofiz.">
+<link rel="icon" href="{{IMG:mark}}">
+<style>
+/* Apofiz: акцент #007AFF, шапка #0E1116, SF Pro. Движение: ease-out (.23,1,.32,1), ≤300ms на UI, transform/opacity. */
+:root{
+  --ease:cubic-bezier(.23,1,.32,1);
+  --accent:#007AFF; --accent-soft:#E8F0FE; --grad:linear-gradient(135deg,#3b82f6,#8b5cf6);
+  --hot:#ff4d8d;
+  --bg:#ffffff; --bg2:#F5F5F7; --fg:#121212; --muted:#5F6672; --line:rgba(18,18,18,.08);
+  --card:#ffffff; --shadow:0 1px 2px rgba(16,24,40,.04),0 12px 32px -12px rgba(16,24,40,.14);
+  --code:#0E1116;
+}
+html[data-theme="dark"]{
+  --accent:#0A84FF; --accent-soft:rgba(10,132,255,.14);
+  --bg:#0B0D12; --bg2:#10131A; --fg:#F2F4F7; --muted:#9AA3B2; --line:rgba(255,255,255,.08);
+  --card:#141821; --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 20px 40px -20px rgba(0,0,0,.6);
+  --code:#080A0E;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 17px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background-color .3s var(--ease),color .3s var(--ease)}
+html[data-lang="ru"] [lang="en"],html[data-lang="en"] [lang="ru"]{display:none!important}
+a{color:inherit}
+img{display:block;max-width:100%}
+.wrap{width:min(1120px,100% - 32px);margin:0 auto;min-width:0}
+.step > div,.story > *,.pad > *,.cliprow > *{min-width:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+
+/* ── шапка ── */
+.top{position:fixed;inset:0 0 auto;z-index:50;height:64px;display:flex;align-items:center;gap:12px;padding:0 16px;padding-top:env(safe-area-inset-top,0px);background:#0E1116;border-bottom:1px solid rgba(255,255,255,.08)}
+.burger{appearance:none;border:0;width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .16s var(--ease),background-color .2s var(--ease)}
+.burger:hover{background:rgba(255,255,255,.14)}
+.burger:active{transform:scale(.96)}
+.burger svg{width:20px;height:20px}
+.lock{display:inline-flex;align-items:center;flex:none;text-decoration:none}
+.lock img{height:44px;width:auto;animation:lkIn .7s var(--ease) both}
+@keyframes lkIn{from{opacity:0;transform:translateX(-6px) scale(.96)}}
+.top .lg{height:46px;width:auto;flex:none;margin-left:2px;filter:drop-shadow(0 2px 8px rgba(255,79,163,.25));animation:lgIn .6s cubic-bezier(.2,.9,.25,1) .45s both}
+@keyframes lgIn{from{opacity:0;transform:translateX(-12px) scale(.9)}}
+html[data-theme="dark"] .gh{background:rgba(255,255,255,.08);color:#fff}
+html[data-theme="dark"] .gh:hover{background:rgba(255,255,255,.14);opacity:1}
+@keyframes lmIn{from{opacity:0;transform:scale(.86)}}
+@keyframes lwIn{from{opacity:0;transform:translateX(-6px)}}
+@keyframes lpIn{from{opacity:0;transform:translateX(-110%)}}
+.top .sp{flex:1}
+.seg{display:inline-flex;background:rgba(255,255,255,.08);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:#C6CEDA;font:600 13px/1 inherit;min-width:40px;height:34px;padding:0 10px;border-radius:9px;cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease),transform .16s var(--ease)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.seg button:active{transform:scale(.96)}
+.gh{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:#fff;color:#0E1116;font:600 14px/1 inherit;text-decoration:none;transition:transform .16s var(--ease),opacity .2s var(--ease)}
+.gh:hover{opacity:.9}.gh:active{transform:scale(.97)}
+.gh svg{width:18px;height:18px}
+.progress{position:fixed;left:0;top:64px;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--grad);z-index:51}
+.tbtn,.lbtn{appearance:none;border:0;height:40px;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;flex:none;-webkit-tap-highlight-color:transparent;transition:transform .16s var(--ease),background-color .2s var(--ease)}
+.tbtn{width:40px}.lbtn{padding:0 12px 0 8px;font:600 14px/1 inherit}
+.tbtn:hover,.lbtn:hover{background:rgba(255,255,255,.14)}.tbtn:active,.lbtn:active{transform:scale(.96)}
+.tbtn svg{width:20px;height:20px;display:none}
+html[data-themepref="auto"] .tbtn .i-auto,html[data-themepref="light"] .tbtn .i-light,html[data-themepref="dark"] .tbtn .i-dark{display:block}
+.flag{width:22px;height:22px;border-radius:50%;overflow:hidden;flex:none;display:inline-flex;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.flag svg{width:100%;height:100%;display:block}
+.flag.g{box-shadow:none;color:var(--muted)}.flag.g svg{width:20px;height:20px;margin:1px}
+.lbtn .flag{display:none}html[data-lang="ru"] .lbtn .f-ru,html[data-lang="en"] .lbtn .f-en{display:inline-flex}
+.lbtn .chev{width:16px;height:16px;opacity:.7;transition:transform .2s var(--ease)}
+.lbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.lwrap{position:relative}
+.lmenu{position:absolute;right:0;top:calc(100% + 10px);z-index:70;min-width:230px;padding:6px;border-radius:16px;background:var(--card);color:var(--fg);border:1px solid var(--line);box-shadow:0 24px 60px -20px rgba(0,0,0,.5);opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .18s var(--ease),transform .2s var(--ease)}
+.lmenu.open{opacity:1;transform:none;pointer-events:auto}
+.lmenu button{width:100%;appearance:none;border:0;background:transparent;color:inherit;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:11px;font:500 15px/1.2 inherit;text-align:left;cursor:pointer;transition:background-color .15s var(--ease)}
+.lmenu button:hover{background:var(--bg2)}
+.lmenu button > span:nth-child(2){flex:1}
+.lmenu .ck{width:18px;height:18px;color:var(--accent);opacity:0}
+.lmenu button[aria-checked="true"]{background:var(--accent-soft)}
+.lmenu button[aria-checked="true"] .ck{opacity:1}
+/* стрелки по разделам (как в Villivaru) */
+.secnav{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;flex-direction:column;align-items:center;padding:4px;border-radius:999px;background:rgba(24,27,34,.72);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 12px 30px -10px rgba(0,0,0,.45);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.secnav.show{opacity:1;transform:none;pointer-events:auto}
+.secnav.scrolling{opacity:0!important;transform:translate3d(0,8px,0)!important;pointer-events:none!important}
+.secnav button{appearance:none;border:0;background:transparent;color:#fff;width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .14s var(--ease),background-color .2s var(--ease),opacity .2s}
+.secnav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.secnav button:hover{background:rgba(255,255,255,.1)}.secnav button:active{transform:scale(.95)}
+#secUp{border-radius:999px 999px 12px 12px}#secDown{border-radius:12px 12px 999px 999px}
+.secnav button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px #0A84FF;background:rgba(10,132,255,.14)}
+.secnav button:focus:not(:focus-visible){outline:none}
+.secnav button:disabled{opacity:.3;cursor:default}
+.secnav i{display:block;width:22px;height:1px;margin:2px 0;background:rgba(255,255,255,.18)}
+@media (max-width:640px){.lbtn{padding:0 10px 0 8px}.lbtn .code{display:none}.secnav{right:max(10px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));padding:3px}}
+@media (max-width:640px){
+  .top{gap:8px;padding:0 12px}
+  .gh{width:40px;padding:0;justify-content:center}.gh span{display:none}
+  .lock img{height:34px}
+  .top .lg{height:36px}
+}
+
+/* меню */
+.scrim{position:fixed;inset:64px 0 0;z-index:60;background:rgba(8,10,14,.32);opacity:0;pointer-events:none;transition:opacity .2s var(--ease)}
+.nav{position:fixed;top:76px;left:12px;z-index:61;width:min(290px,calc(100vw - 24px));max-height:calc(100dvh - 88px);overflow-y:auto;padding:8px;border-radius:20px;background:var(--card);border:1px solid var(--line);box-shadow:0 24px 60px -20px rgba(16,24,40,.35);opacity:0;transform:translate3d(-12px,0,0) scale(.98);transform-origin:top left;pointer-events:none;transition:opacity .2s var(--ease),transform .24s var(--ease)}
+body.nav-open .scrim,body.nav-open .nav{opacity:1;pointer-events:auto}
+body.nav-open .nav{transform:none}
+.nav a{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:12px;text-decoration:none;font-weight:500;transition:background-color .16s var(--ease)}
+.nav a:hover{background:var(--bg2)}
+.nav a b{width:24px;color:var(--muted);font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* ── hero ── */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;padding:120px 0 64px;color:#fff;background:#05070A;overflow:hidden;isolation:isolate}
+.reel{position:absolute;inset:0;z-index:-2}
+.reel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity 1.2s var(--ease)}
+.reel img.on{opacity:1;animation:kb 7s linear forwards}
+@keyframes kb{from{transform:scale(1.06)}to{transform:scale(1.0)}}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(5,7,10,.55) 0%,rgba(5,7,10,.15) 35%,rgba(5,7,10,.75) 72%,#05070A 100%)}
+.eyebrow span[lang]{min-width:0}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;max-width:100%;line-height:1.3!important;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:600 13px/1 inherit;letter-spacing:.02em}
+.dot{width:8px;height:8px;border-radius:50%;background:#30d158;box-shadow:0 0 0 0 rgba(48,209,88,.6);animation:pulse 1.8s var(--ease) infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,209,88,.6)}100%{box-shadow:0 0 0 10px rgba(48,209,88,0)}}
+.hero h1{margin:18px 0 14px;font:800 clamp(40px,7.4vw,92px)/.98 -apple-system,"SF Pro Display",Inter,sans-serif;letter-spacing:-.035em;max-width:14ch}
+.hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{max-width:56ch;font-size:clamp(17px,1.6vw,20px);color:rgba(255,255,255,.82);margin:0 0 28px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 22px;border-radius:14px;font:600 16px/1 inherit;text-decoration:none;border:0;cursor:pointer;transition:transform .16s var(--ease),box-shadow .2s var(--ease),background-color .2s var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--accent);color:#fff;box-shadow:0 10px 30px -10px rgba(10,132,255,.8)}
+.btn.pri:hover{box-shadow:0 14px 36px -10px rgba(10,132,255,.95)}
+.btn.sec{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btn.sec:hover{background:rgba(255,255,255,.16)}
+.btn svg{width:18px;height:18px}
+.btn .gstar{width:20px;height:20px;fill:#FFD60A;filter:drop-shadow(0 0 6px rgba(255,214,10,.65))}
+/* мысли бота */
+.thoughts{position:absolute;right:max(16px,calc((100vw - 1120px)/2));top:96px;width:min(360px,calc(100vw - 32px));padding:14px;border-radius:18px;background:rgba(10,12,16,.62);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font:500 13.5px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#E6EAF0}
+.thoughts h4{margin:0 0 10px;font:600 12px/1 -apple-system,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#9AA3B2;display:flex;align-items:center;gap:8px}
+.tlist{display:flex;flex-direction:column;gap:6px;min-height:150px}
+.tlist div{opacity:0;transform:translateY(6px);transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.tlist div.in{opacity:1;transform:none}
+.tlist i{font-style:normal;color:#64D2FF}
+.tlist .w{color:#30D158}.tlist .r{color:#FF6B8B}
+@media (max-width:900px){.thoughts{position:relative;right:auto;top:auto;margin-top:28px}}
+.scroll{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:26px;height:40px;border-radius:14px;border:2px solid rgba(255,255,255,.35)}
+.scroll::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#fff;animation:wheel 1.6s var(--ease) infinite}
+@keyframes wheel{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(12px)}}
+
+/* ── секции ── */
+section{padding:96px 0}
+section.alt{background:var(--bg2)}
+.kicker{font:700 13px/1 inherit;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h2{font:800 clamp(30px,4.2vw,52px)/1.05 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.03em;margin:0 0 16px;max-width:20ch}
+.sub{color:var(--muted);max-width:62ch;margin:0 0 44px;font-size:18px}
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.d1{transition-delay:.06s}.d2{transition-delay:.12s}.d3{transition-delay:.18s}
+
+/* фичи */
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:980px){.feats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.feats{grid-template-columns:1fr}}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.feat:hover{transform:translateY(-4px)}
+.feat figure{margin:0;aspect-ratio:16/9;overflow:hidden;position:relative;background:#000}
+.feat figure img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+.feat:hover figure img{transform:scale(1.04)}
+.feat .tag{position:absolute;left:12px;top:12px;padding:5px 10px;border-radius:999px;background:rgba(10,12,16,.7);color:#fff;font:600 12px/1 inherit;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.feat .b{padding:18px 20px 22px}
+.feat h3{margin:0 0 6px;font:700 20px/1.2 inherit;letter-spacing:-.01em}
+.feat p{margin:0;color:var(--muted);font-size:15.5px}
+.keys{display:inline-flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 8px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);font:600 13px/1 ui-monospace,Menlo,monospace}
+
+/* схема */
+.arch{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow)}
+.arch svg{width:100%;height:auto;display:block}
+.arch .node rect{fill:var(--bg2);stroke:var(--line)}
+.arch .node text{fill:var(--fg);font:600 15px -apple-system,sans-serif}
+.arch .node .s{fill:var(--muted);font:500 12px -apple-system,sans-serif}
+.arch .wire{fill:none;stroke:var(--line);stroke-width:2}
+.arch .flow{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:10 18;animation:flow 1.2s linear infinite}
+.arch .f1{stroke:#0A84FF}.arch .f2{stroke:#30D158;animation-duration:.5s}.arch .f3{stroke:#BF5AF2;animation-duration:2.6s}.arch .f4{stroke:#FF9F0A}
+@keyframes flow{to{stroke-dashoffset:-28}}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:16px;color:var(--muted);font-size:14px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:22px;height:4px;border-radius:2px}
+
+/* цифры */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media (max-width:880px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{padding:26px 22px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.stat b{display:block;font:800 clamp(34px,4.4vw,52px)/1 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{display:block;margin-top:10px;color:var(--muted);font-size:15px}
+
+/* таймлайн угона */
+.story{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:start}
+@media (max-width:900px){.story{grid-template-columns:1fr}}
+.shot{position:sticky;top:88px;border-radius:22px;overflow:hidden;aspect-ratio:16/9;background:#000;box-shadow:var(--shadow)}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s var(--ease)}
+.shot img.on{opacity:1}
+@media (max-width:900px){.shot{position:relative;top:0}}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.tl li{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:16px;border-radius:18px;border:1px solid var(--line);background:var(--card);cursor:pointer;transition:border-color .2s var(--ease),transform .16s var(--ease),background-color .2s var(--ease)}
+.tl li:active{transform:scale(.99)}
+.tl li.on{border-color:var(--accent);background:var(--accent-soft)}
+.tl .n{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--bg2);font:700 15px/1 ui-monospace,Menlo,monospace}
+.tl li.on .n{background:var(--accent);color:#fff}
+.tl h4{margin:2px 0 4px;font:700 17px/1.25 inherit}
+.tl p{margin:0;color:var(--muted);font-size:15px}
+
+/* геймпад */
+.pad{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+@media (max-width:900px){.pad{grid-template-columns:1fr}}
+.tabs{display:inline-flex;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:4px;gap:2px;margin-bottom:18px;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;color:var(--muted);font:600 14px/1 inherit;height:38px;padding:0 14px;border-radius:10px;cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease),transform .16s var(--ease)}
+.tabs button[aria-pressed="true"]{background:var(--card);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tabs button:active{transform:scale(.97)}
+.padsvg{width:100%;height:auto;overflow:visible}
+.padsvg .bt{cursor:pointer;outline:none}
+.padsvg .bt .c,.padsvg .bt circle:not(.well):not(.ring):not(.sym),.padsvg .bt rect:not(.sym){fill:#EEE8FF;stroke:rgba(70,30,140,.25);stroke-width:1.5;transition:fill .2s var(--ease),stroke .2s var(--ease),filter .2s var(--ease)}
+.padsvg .bt text{fill:#4B3C8A;font:700 14px -apple-system,sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.padsvg .dp text{font-size:11px;fill:#7A6CB8}
+.padsvg .trig .c,.padsvg .bump .c{fill:#1E1B3A;stroke:rgba(255,255,255,.12)}
+.padsvg .trig text,.padsvg .bump text{fill:#E9E4FF}
+.padsvg .tp .c{fill:url(#tpad2);stroke:rgba(255,255,255,.2)}
+.padsvg .tp text{fill:rgba(255,255,255,.7);font-weight:700;letter-spacing:.14em;font-size:10px}
+.padsvg .sm text{fill:rgba(255,255,255,.85)}
+.padsvg .well{fill:#0B0C10}
+.padsvg .stk circle:not(.well):not(.ring):not(.sym){fill:url(#cap);stroke:rgba(255,255,255,.1)}
+.padsvg .ring{fill:none;stroke:rgba(255,255,255,.08);stroke-width:2}
+.padsvg .stk text{fill:#C7CCD5;font-size:12px}
+.padsvg .sym{fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:stroke .2s var(--ease)}
+.padsvg .fb .sym{stroke:#8E7CC8}
+.padsvg .lightbar{fill:none;stroke:#5CE1FF;stroke-width:4;stroke-linecap:round;filter:drop-shadow(0 0 6px #5CE1FF);animation:lb 2.4s ease-in-out infinite}
+@keyframes lb{50%{opacity:.45}}
+.padsvg .bt.has .c,.padsvg .bt.has.bt circle:not(.well):not(.ring):not(.sym),.padsvg .bt.has rect:not(.sym){stroke:var(--accent);stroke-width:2.2}
+.padsvg .bt:hover .c,.padsvg .bt:hover circle:not(.well):not(.ring):not(.sym),.padsvg .bt:focus-visible .c{filter:brightness(1.25)}
+.padsvg .bt.sel .c,.padsvg .bt.sel.bt circle:not(.well):not(.ring):not(.sym),.padsvg .bt.sel rect:not(.sym){fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 10px rgba(10,132,255,.8))}
+.padsvg .bt.sel text{fill:#fff}.padsvg .bt.sel .sym{stroke:#fff}
+.padsvg .bt.dim{opacity:.35}
+.padwrap{position:relative;width:100%;max-width:660px;margin:0 auto}
+.pados{width:100%;height:auto;display:block;overflow:visible}
+.pados .tl{fill:#fff;font:700 22px -apple-system,sans-serif;text-anchor:middle;pointer-events:none;opacity:.85}
+.pados .tl.sm2{font-size:17px;opacity:.75}
+.pados .bt{cursor:pointer;outline:none}
+.pados .bt rect,.pados .bt circle,.pados .bt .hz{fill:transparent;stroke:transparent;stroke-width:3.5;transition:fill .2s var(--ease),stroke .2s var(--ease),filter .2s var(--ease)}
+.pados .trig path{fill:#1E1B3A;stroke:rgba(255,255,255,.12);stroke-width:1.2;vector-effect:non-scaling-stroke;transition:fill .2s var(--ease),filter .2s var(--ease)}
+.pados .bt .hz{vector-effect:non-scaling-stroke}
+.pados .bt.has rect,.pados .bt.has circle,.pados .bt.has .hz{stroke:#0A84FF;stroke-dasharray:7 6;animation:hint 2.2s linear infinite;filter:drop-shadow(0 0 4px rgba(46,139,255,.7))}
+.pados .trig.has path{stroke:#0A84FF;stroke-width:2.5;stroke-dasharray:7 6;animation:hint 2.2s linear infinite}
+@keyframes hint{to{stroke-dashoffset:-26}}
+.pados .bt.dim{cursor:default}
+.pados .bt:hover rect,.pados .bt:hover circle,.pados .bt:focus-visible rect,.pados .bt:focus-visible circle,
+.pados .bt:hover rect,.pados .bt:hover circle,.pados .bt:hover .hz,.pados .bt:focus-visible rect,.pados .bt:focus-visible circle,.pados .bt:focus-visible .hz{fill:rgba(46,139,255,.08);stroke:#0A84FF;stroke-width:4;stroke-dasharray:none;animation:none;filter:none}
+.pados .bt.sel rect,.pados .bt.sel circle,.pados .bt.sel .hz{fill:rgba(92,200,255,.10);stroke:#0A84FF;stroke-width:4.5;stroke-dasharray:none;animation:none;filter:drop-shadow(0 0 6px #5CC8FF) drop-shadow(0 0 16px rgba(92,200,255,.85))}
+.pados .trig:hover path,.pados .trig:focus-visible path{stroke:#0A84FF;stroke-width:3;stroke-dasharray:none;animation:none}
+.pados .trig.sel path{stroke:#0A84FF;stroke-width:3.5;stroke-dasharray:none;animation:none;filter:drop-shadow(0 0 6px #5CC8FF) drop-shadow(0 0 16px rgba(92,200,255,.85))}
+.info{padding:24px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);min-height:200px}
+.info .big{font:800 44px/1 -apple-system,sans-serif;margin-bottom:10px}
+.info h4{margin:0 0 6px;font:700 20px/1.25 inherit}
+.info p{margin:0;color:var(--muted)}
+.info ul{margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.info li{display:flex;gap:10px}.info li .k{flex:none}
+
+/* установка */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:16px}
+.step{display:grid;grid-template-columns:44px 1fr;gap:18px;padding:22px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.step .num{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:#fff;font:700 18px/1 -apple-system,sans-serif;font-variant-numeric:tabular-nums;box-shadow:0 6px 16px -8px rgba(10,132,255,.7)}
+.step h3{margin:4px 0 6px;font:700 20px/1.25 inherit}
+.step p{margin:0 0 10px;color:var(--muted)}
+.step p:last-child{margin-bottom:0}
+.cmd{position:relative;margin:12px 0 0;border-radius:14px;background:var(--code);color:#E6EAF0;border:1px solid rgba(255,255,255,.06)}
+.cmd pre{margin:0;padding:16px 64px 16px 16px;overflow-x:auto;font:500 14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+.cmd .c{color:#7D8590}
+.copy{position:absolute;right:8px;top:8px;height:32px;padding:0 10px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#E6EAF0;font:600 12px/1 inherit;cursor:pointer;transition:background-color .2s var(--ease),transform .16s var(--ease)}
+.copy:hover{background:rgba(255,255,255,.12)}.copy:active{transform:scale(.96)}
+.copy.ok{background:#30D158;border-color:#30D158;color:#05230F}
+.need{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 28px}
+.need > span{padding:8px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14.5px}
+.trouble{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+@media (max-width:880px){.trouble{grid-template-columns:1fr}}
+.trouble div{padding:18px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.trouble b{display:block;margin-bottom:6px}
+.trouble p{margin:0;color:var(--muted);font-size:15px}
+
+/* шортсы */
+.clips{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:880px){.clips{grid-template-columns:repeat(2,1fr)}}
+.clip{padding:20px;border-radius:20px;background:var(--card);border:1px solid var(--line)}
+.clip b{display:block;font:800 30px/1 -apple-system,sans-serif;margin-bottom:8px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.clip p{margin:0;color:var(--muted);font-size:15px}
+.phone9{width:200px;aspect-ratio:9/16;border-radius:28px;border:6px solid #1c1f26;overflow:hidden;position:relative;margin:0 auto;background:#000;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.phone9 img{width:100%;height:100%;object-fit:cover;object-position:60% 50%}
+.phone9 .hook{position:absolute;left:10px;right:10px;top:18%;text-align:center;color:#fff;font:900 20px/1.1 -apple-system,sans-serif;text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 18px rgba(0,0,0,.6)}
+.phone9 .subw{position:absolute;left:0;right:0;bottom:22%;text-align:center;font:900 18px/1 -apple-system,sans-serif;color:#FFD60A;text-shadow:0 2px 0 #000}
+.cliprow{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:center;margin-top:28px}
+@media (max-width:700px){.cliprow{grid-template-columns:1fr}}
+
+/* участие + подвал */
+.contrib{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:880px){.contrib{grid-template-columns:1fr}}
+.contrib div{padding:22px;border-radius:20px;background:var(--card);border:1px solid var(--line)}
+.contrib h3{margin:0 0 6px;font:700 18px/1.25 inherit}
+.contrib p{margin:0;color:var(--muted);font-size:15px}
+.cta2{margin-top:40px;padding:40px;border-radius:28px;background:#0E1116;color:#fff;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.cta2{overflow:clip}
+.cta2{background:transparent!important;overflow:visible!important;border-radius:0;color:var(--fg)}
+html[data-theme="light"] .cta2 .btn.sec{background:var(--card);color:var(--fg);border:1px solid var(--line)}
+html[data-theme="light"] .wanted svg{stroke:rgba(0,0,0,.45)}
+.cta2::before,.cta2::after{content:none}
+.cta2 .glow{position:absolute;inset:-25% -8%;pointer-events:none;filter:blur(42px);-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 30%,transparent 75%)}
+.cta2 .glow i{position:absolute;top:20%;bottom:20%;width:46%;border-radius:50%;opacity:.25;will-change:opacity,transform}
+.cta2 .glow .gb{left:6%;background:radial-gradient(closest-side,rgba(40,120,255,.95),rgba(40,120,255,0));animation:gB 3.2s ease-in-out infinite}
+.cta2 .glow .gr{right:6%;background:radial-gradient(closest-side,rgba(255,50,80,.85),rgba(255,50,80,0));animation:gR 3.2s ease-in-out infinite}
+.cta2 .glow .gp{left:30%;width:40%;background:radial-gradient(closest-side,rgba(139,92,246,.6),rgba(139,92,246,0));animation:gP 6s ease-in-out infinite}
+@keyframes gB{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:.18;transform:scale(.92)}}
+@keyframes gR{0%,100%{opacity:.15;transform:scale(.92)}50%{opacity:.85;transform:scale(1)}}
+@keyframes gP{0%,100%{opacity:.25}50%{opacity:.5}}
+.cta2t{position:relative;z-index:1}
+.wanted{display:flex;gap:6px;margin-bottom:12px}
+.wanted i{width:30px;height:30px;display:block}
+.wanted svg{width:100%;height:100%;fill:rgba(255,255,255,.14);stroke:rgba(0,0,0,.6);stroke-width:1.4;stroke-linejoin:round;transform-origin:50% 55%}
+@keyframes w0{0%,0%{fill:rgba(255,255,255,.14);transform:scale(.8);filter:none}3%{fill:#fff;transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}6%,58%{fill:#fff;transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}62%,70%,78%{fill:rgba(255,255,255,.22);filter:none}66%,74%,82%{fill:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}88%,100%{fill:rgba(255,255,255,.14);transform:scale(1);filter:none}}
+@keyframes w1{0%,7%{fill:rgba(255,255,255,.14);transform:scale(.8);filter:none}10%{fill:#fff;transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}13%,58%{fill:#fff;transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}62%,70%,78%{fill:rgba(255,255,255,.22);filter:none}66%,74%,82%{fill:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}88%,100%{fill:rgba(255,255,255,.14);transform:scale(1);filter:none}}
+@keyframes w2{0%,14%{fill:rgba(255,255,255,.14);transform:scale(.8);filter:none}17%{fill:#fff;transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}20%,58%{fill:#fff;transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}62%,70%,78%{fill:rgba(255,255,255,.22);filter:none}66%,74%,82%{fill:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}88%,100%{fill:rgba(255,255,255,.14);transform:scale(1);filter:none}}
+@keyframes w3{0%,21%{fill:rgba(255,255,255,.14);transform:scale(.8);filter:none}24%{fill:#fff;transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}27%,58%{fill:#fff;transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}62%,70%,78%{fill:rgba(255,255,255,.22);filter:none}66%,74%,82%{fill:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}88%,100%{fill:rgba(255,255,255,.14);transform:scale(1);filter:none}}
+@keyframes w4{0%,28%{fill:rgba(255,255,255,.14);transform:scale(.8);filter:none}31%{fill:#fff;transform:scale(1.18);filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}34%,58%{fill:#fff;transform:scale(1);filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}62%,70%,78%{fill:rgba(255,255,255,.22);filter:none}66%,74%,82%{fill:#fff;filter:drop-shadow(0 0 7px rgba(255,255,255,.8))}88%,100%{fill:rgba(255,255,255,.14);transform:scale(1);filter:none}}
+.cta2.in .wanted i:nth-child(1) svg{animation:w0 5.5s var(--ease) .3s infinite}
+.cta2.in .wanted i:nth-child(2) svg{animation:w1 5.5s var(--ease) .3s infinite}
+.cta2.in .wanted i:nth-child(3) svg{animation:w2 5.5s var(--ease) .3s infinite}
+.cta2.in .wanted i:nth-child(4) svg{animation:w3 5.5s var(--ease) .3s infinite}
+.cta2.in .wanted i:nth-child(5) svg{animation:w4 5.5s var(--ease) .3s infinite}
+.cta2 h3{margin:0;font:800 clamp(24px,3vw,34px)/1.1 -apple-system,sans-serif;letter-spacing:-.02em;position:relative}
+.cta2 .ctas{z-index:1}
+.cta2 .ctas{position:relative}
+footer{padding:48px 0 64px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+footer .row{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+footer .brand{display:flex;align-items:center;gap:12px;color:var(--fg);font-weight:600;text-decoration:none}
+footer .brand img{width:36px;height:36px;border-radius:9px}
+footer p{max-width:80ch;margin:18px 0 0}
+
+/* ── скачать ── */
+.anchor{position:relative;top:-8px;display:block;height:0}
+.dl{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px 28px;align-items:center;padding:28px;border-radius:28px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;isolation:isolate}
+.dl::before{content:"";position:absolute;inset:-40% -10% auto auto;width:62%;aspect-ratio:1;z-index:-1;background:radial-gradient(closest-side,rgba(59,130,246,.16),rgba(139,92,246,.08) 55%,transparent);pointer-events:none}
+.dl-app{display:flex;gap:16px;align-items:center;min-width:0}
+.dl-ico{flex:none;width:68px;height:68px;border-radius:18px;background:#0E1116;display:grid;place-items:center;box-shadow:0 10px 24px -12px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08)}
+.dl-ico img{width:46px;height:auto}
+.dl-name{min-width:0}
+.dl-name > b{display:block;font:800 clamp(20px,2.2vw,26px)/1.15 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.02em}
+.dl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:6px;color:var(--muted);font-size:14px}
+.dl-meta .v{font:600 12.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);background:var(--accent-soft);padding:5px 8px;border-radius:7px}
+.dl-meta .v:empty,.dl-meta .rd:empty{display:none}
+.dl-meta .v:not(:empty) + .vfb{display:none}
+.dl-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end}
+.btn.dlb{height:64px;padding:0 24px 0 20px;border-radius:16px;gap:14px}
+.btn.dlb svg{width:26px;height:26px;flex:none}
+.dlt{display:flex;flex-direction:column;gap:5px;text-align:left}
+.dlt > span{font:700 17px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.dlt small{font:500 12.5px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;opacity:.78}
+.sz:not(:empty)::before{content:" · "}
+.dl[data-os="mac"] .dl-win,.dl[data-os="win"] .dl-mac{display:none}
+.dl-foot{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-top:18px;border-top:1px solid var(--line);font-size:14.5px}
+.dl-foot .sp{flex:1}
+.dl .dl-ifother,.dl .dl-ifmac,.dl .dl-ifwin{display:none}
+.dl[data-os="other"] .dl-ifother,.dl[data-os="mac"] .dl-ifmac,.dl[data-os="win"] .dl-ifwin{display:inline-flex}
+.dl-note{color:var(--muted)}
+.dl-swap,.dl-link{color:var(--accent);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;border-radius:6px;transition:opacity .2s var(--ease)}
+.dl-swap:hover,.dl-link:hover{opacity:.75}
+.dl-link svg{width:15px;height:15px;transition:transform .2s var(--ease)}
+.dl-link:hover svg{transform:translateX(2px)}
+.dl-norel{grid-column:1/-1;display:none;margin:0;padding:12px 14px;border-radius:14px;background:var(--accent-soft);font-size:14.5px}
+.dl.norel .dl-norel{display:block}
+@media (max-width:760px){
+  .dl{grid-template-columns:1fr;padding:20px;border-radius:22px}
+  .dl-btns{justify-content:stretch;flex-direction:column}
+  .btn.dlb{width:100%;justify-content:flex-start}
+  .dl-foot .sp{display:none}
+  .dl-foot{flex-direction:column;align-items:flex-start;gap:12px}
+  .dl-ico{width:56px;height:56px;border-radius:15px}.dl-ico img{width:38px}
+}
+
+/* PS5 — разрешения */
+.pre{margin-top:56px}
+.pre-h{display:flex;gap:16px;align-items:flex-start;margin-bottom:22px}
+.pre-ic{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#FF9F0A,#FF453A);box-shadow:0 10px 24px -10px rgba(255,69,58,.7)}
+.pre-ic svg{width:24px;height:24px}
+.pre-h h3{margin:2px 0 6px;font:800 clamp(22px,2.6vw,30px)/1.15 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.02em}
+.pre-h p{margin:0;color:var(--muted);max-width:64ch}
+.pcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.pcards{grid-template-columns:minmax(0,1fr)}}
+.pcard{display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);min-width:0}
+.pc-top{display:flex;align-items:center;gap:12px}
+.pnum{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff;font:700 15px/1 -apple-system,sans-serif;box-shadow:0 6px 16px -8px rgba(10,132,255,.7)}
+.pcard h4{margin:0;font:700 18px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.pcard > p{margin:0;color:var(--muted);font-size:15px}
+.pcard .err{font:600 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#FF453A;background:rgba(255,69,58,.1);padding:3px 7px;border-radius:6px;white-space:nowrap}
+/* макет экрана настроек PS5 — всегда тёмный, как на консоли */
+.pui{border-radius:16px;padding:12px;background:linear-gradient(160deg,#1B2232,#0C1018 70%);border:1px solid rgba(255,255,255,.07);color:#E9EDF5;display:flex;flex-direction:column;gap:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.crumb{font:500 11.5px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#8F9BB3;padding:2px 4px 6px;letter-spacing:.01em;overflow-wrap:anywhere}
+.prow{display:flex;align-items:center;gap:10px;min-height:46px;padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.04);font-size:13.5px;line-height:1.3;transition:background-color .3s var(--ease) var(--td,0s),box-shadow .3s var(--ease) var(--td,0s)}
+.prow > svg{flex:none;width:20px;height:20px;color:#AEB8CC}
+.prow .pl{flex:1;min-width:0}
+.tg{flex:none;position:relative;width:40px;height:24px;border-radius:12px;background:rgba(255,255,255,.2);transition:background-color .24s var(--ease) var(--td,0s)}
+.tg::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .26s var(--ease) var(--td,0s)}
+.pcard.in .prow{background:rgba(10,132,255,.12);box-shadow:inset 0 0 0 1px rgba(10,132,255,.35)}
+.pcard.in .tg{background:#0A84FF}
+.pcard.in .tg::after{transform:translateX(16px)}
+.ava{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#fff;font:700 12px/1 -apple-system,sans-serif}
+.prow .ck{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#30D158;color:#05230F;transform:scale(.4);opacity:0;transition:transform .26s var(--ease) var(--td,0s),opacity .2s var(--ease) var(--td,0s)}
+.prow .ck svg{width:14px;height:14px}
+.pcard.in .ck{transform:none;opacity:1}
+.pcode{display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 4px 8px}
+.pcode i{font:700 clamp(17px,2.2vw,22px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;font-style:normal;width:clamp(26px,3.4vw,34px);height:clamp(36px,4.4vw,44px);display:grid;place-items:center;border-radius:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:transparent;transition:color .2s var(--ease) var(--td,0s),border-color .2s var(--ease) var(--td,0s),transform .24s var(--ease) var(--td,0s);transform:translateY(4px)}
+.pcode b{width:8px}
+.pcard.in .pcode i{color:#fff;border-color:rgba(10,132,255,.55);transform:none}
+
+/* после установки — степпер */
+.flow{margin-top:56px;padding:26px 24px 22px;border-radius:24px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.flow h3{margin:0 0 22px;font:800 clamp(20px,2.2vw,24px)/1.2 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.02em}
+.fsteps{--k:0;position:relative;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.fsteps::before,.fsteps::after{content:"";position:absolute;top:23px;left:10%;right:10%;height:3px;border-radius:2px;background:var(--line)}
+.fsteps::after{background:var(--grad);transform-origin:0 50%;transform:scaleX(calc(var(--k) / 4));transition:transform .5s var(--ease)}
+.fsteps li{position:relative;z-index:1;min-width:0}
+.fsteps button{appearance:none;border:0;background:none;color:inherit;font:inherit;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 4px;text-align:center;cursor:pointer;border-radius:14px;-webkit-tap-highlight-color:transparent}
+.fsteps button:active .fdot{transform:scale(.94)}
+.fdot{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:2px solid var(--line);color:var(--muted);transition:background-color .25s var(--ease),border-color .25s var(--ease),color .25s var(--ease),transform .16s var(--ease),box-shadow .25s var(--ease)}
+.fdot svg{width:20px;height:20px}
+.ft{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ft b{font:700 15px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--muted);transition:color .25s var(--ease)}
+.ft small{font-size:13px;line-height:1.3;color:var(--muted)}
+.fsteps li.done .fdot{background:linear-gradient(var(--accent-soft),var(--accent-soft)) var(--card);border-color:var(--accent);color:var(--accent)}
+.fsteps li.on .fdot{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.08);box-shadow:0 0 0 6px var(--accent-soft),0 10px 24px -8px rgba(10,132,255,.8)}
+.fsteps li.done .ft b,.fsteps li.on .ft b{color:var(--fg)}
+@media (max-width:760px){
+  .flow{padding:20px 16px 16px}
+  .fsteps{grid-template-columns:minmax(0,1fr);gap:0}
+  .fsteps::before,.fsteps::after{top:30px;bottom:30px;left:23px;right:auto;width:3px;height:auto}
+  .fsteps::after{transform-origin:50% 0;transform:scaleY(calc(var(--k) / 4))}
+  .fsteps button{flex-direction:row;text-align:left;gap:14px;height:60px;padding:0}
+  .fdot{flex:none;width:46px;height:46px}
+}
+
+/* сборка из исходников */
+.src{margin-top:28px;border-radius:22px;background:var(--card);border:1px solid var(--line)}
+.src summary{list-style:none;display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;border-radius:22px;-webkit-tap-highlight-color:transparent;transition:background-color .2s var(--ease)}
+.src summary::-webkit-details-marker{display:none}
+.src summary:hover{background:var(--bg2)}
+.src summary:active .src-ic{transform:scale(.95)}
+.src-ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line);transition:transform .16s var(--ease)}
+.src-ic svg{width:20px;height:20px}
+.src-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.src-t b{font:700 17px/1.25 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.src-t small{color:var(--muted);font-size:14px}
+.src .chev{flex:none;width:20px;height:20px;color:var(--muted);transition:transform .24s var(--ease)}
+.src[open] .chev{transform:rotate(180deg)}
+.src-b{padding:6px 20px 22px}
+.src[open] .src-b{animation:srcIn .28s var(--ease)}
+@keyframes srcIn{from{opacity:0;transform:translateY(-6px)}}
+.src-b .step{box-shadow:none;background:var(--bg2)}
+@media (max-width:640px){.src summary{padding:16px}.src-b{padding:4px 12px 14px}}
+@media (prefers-reduced-motion:reduce){
+  .prow,.tg,.tg::after,.pcode i,.prow .ck{transition:none!important}
+}
+.src-b .need > span{background:var(--bg2)}
+
+@media (max-width:640px){
+  section{padding:64px 0}
+  .hero{padding:96px 0 56px;min-height:auto}
+  .hero .lead{font-size:16.5px}
+  .btn{height:48px;padding:0 18px;font-size:15px}
+  .sub{font-size:16px;margin-bottom:28px}
+  .step{grid-template-columns:1fr;gap:12px;padding:18px}
+  .cmd pre{font-size:12.5px;padding:14px 56px 14px 14px}
+  .stats{gap:12px}.stat{padding:20px 16px}
+  .cta2{padding:28px}
+  .scroll{display:none}
+  .info .big{font-size:34px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .rv{opacity:1;transform:none}
+  .wanted svg{fill:#fff}.cta2 .glow i{opacity:.5}
+}
+@media print{.top,.progress,.scrim,.nav,.scroll{display:none}.hero{min-height:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+  <a class="lock" href="https://apofiz.com" aria-label="Apofiz Play"><img src="{{IMG:playlock}}" alt="Apofiz Play"></a><img class="lg" src="{{IMG:gta6logo}}" alt="GTA VI">
+  <span class="sp"></span>
+  <button class="tbtn" id="tbtn" type="button" aria-label="Тема / Theme"><svg class="i-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/></svg><svg class="i-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+  <div class="lwrap">
+    <button class="lbtn" id="lbtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="lmenu"><span class="flag f-ru"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice"><rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#1C57D8"/><rect y="13.33" width="30" height="6.67" fill="#D52B1E"/></svg></span><span class="flag f-en"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice"><rect width="30" height="20" fill="#B22234"/><g fill="#fff"><rect y="1.54" width="30" height="1.54"/><rect y="4.62" width="30" height="1.54"/><rect y="7.70" width="30" height="1.54"/><rect y="10.78" width="30" height="1.54"/><rect y="13.86" width="30" height="1.54"/><rect y="16.94" width="30" height="1.54"/></g><rect width="13" height="10.77" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.5" cy="2.2" r=".7"/><circle cx="6.5" cy="2.2" r=".7"/><circle cx="10.5" cy="2.2" r=".7"/><circle cx="4.5" cy="5.4" r=".7"/><circle cx="8.5" cy="5.4" r=".7"/><circle cx="2.5" cy="8.6" r=".7"/><circle cx="6.5" cy="8.6" r=".7"/><circle cx="10.5" cy="8.6" r=".7"/></g></svg></span><b class="code"></b><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="lmenu" id="lmenu" role="menu">
+      <button role="menuitemradio" data-setlang="auto"><span class="flag g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg></span><span><span lang="ru">Системный</span><span lang="en">System</span></span><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button role="menuitemradio" data-setlang="ru"><span class="flag"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice"><rect width="30" height="20" fill="#fff"/><rect y="6.67" width="30" height="6.67" fill="#1C57D8"/><rect y="13.33" width="30" height="6.67" fill="#D52B1E"/></svg></span><span>Русский</span><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+      <button role="menuitemradio" data-setlang="en"><span class="flag"><svg viewBox="0 0 30 20" preserveAspectRatio="xMidYMid slice"><rect width="30" height="20" fill="#B22234"/><g fill="#fff"><rect y="1.54" width="30" height="1.54"/><rect y="4.62" width="30" height="1.54"/><rect y="7.70" width="30" height="1.54"/><rect y="10.78" width="30" height="1.54"/><rect y="13.86" width="30" height="1.54"/><rect y="16.94" width="30" height="1.54"/></g><rect width="13" height="10.77" fill="#3C3B6E"/><g fill="#fff"><circle cx="2.5" cy="2.2" r=".7"/><circle cx="6.5" cy="2.2" r=".7"/><circle cx="10.5" cy="2.2" r=".7"/><circle cx="4.5" cy="5.4" r=".7"/><circle cx="8.5" cy="5.4" r=".7"/><circle cx="2.5" cy="8.6" r=".7"/><circle cx="6.5" cy="8.6" r=".7"/><circle cx="10.5" cy="8.6" r=".7"/></g></svg></span><span>English</span><svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+  </div>
+  <a class="gh" href="https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg><span>GitHub</span></a>
+</header>
+<div class="progress" id="progress"></div>
+<div class="scrim" id="scrim"></div>
+<nav class="nav" id="nav" aria-label="Sections">
+  <a href="#what"><b>01</b><span lang="ru">Что умеет</span><span lang="en">What it does</span></a>
+  <a href="#how"><b>02</b><span lang="ru">Как устроен</span><span lang="en">How it works</span></a>
+  <a href="#heist"><b>03</b><span lang="ru">Угон по шагам</span><span lang="en">A car theft, step by step</span></a>
+  <a href="#numbers"><b>04</b><span lang="ru">Цифры</span><span lang="en">Numbers</span></a>
+  <a href="#controls"><b>05</b><span lang="ru">Управление</span><span lang="en">Controls</span></a>
+  <a href="#download"><b>06</b><span lang="ru">Скачать</span><span lang="en">Download</span></a>
+  <a href="#clips"><b>07</b><span lang="ru">Шортсы</span><span lang="en">Shorts</span></a>
+  <a href="#contribute"><b>08</b><span lang="ru">Участвовать</span><span lang="en">Contribute</span></a>
+</nav>
+
+<main id="top">
+<section class="hero">
+  <div class="reel" id="reel">
+    <img src="{{IMG:sj3}}" alt="" class="on"><img src="{{IMG:hw_2}}" alt=""><img src="{{IMG:g4}}" alt=""><img src="{{IMG:g6}}" alt=""><img src="{{IMG:atk}}" alt="">
+  </div>
+  <div class="wrap">
+    <span class="eyebrow rv"><span class="dot"></span><span lang="ru">Работает на настоящей PS5 · открытый код</span><span lang="en">Runs on a real PS5 · open source</span></span>
+    <h1 class="rv d1"><span lang="ru">ИИ играет в <em>GTA&nbsp;6</em> за тебя</span><span lang="en">An AI that plays <em>GTA&nbsp;6</em> for you</span></h1>
+    <p class="lead rv d2"><span lang="ru">Видит экран, угоняет и заводит машины, отбивается, уходит от полиции и сам едет на задание. С твоего Мака, на твоей консоли, без модов.</span><span lang="en">It watches the screen, steals and hotwires cars, fights back, shakes the cops and drives itself to the next mission. From your Mac, on your console, no mods.</span></p>
+    <div class="ctas rv d3">
+      <a class="btn pri" href="#download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span lang="ru">Скачать</span><span lang="en">Download</span></a>
+      <a class="btn sec" href="#how"><span lang="ru">Как это работает</span><span lang="en">How it works</span></a>
+    </div>
+    <aside class="thoughts rv d3" aria-label="Bot thoughts">
+      <h4><span class="dot"></span><span lang="ru">Мысли бота · вживую</span><span lang="en">Bot thoughts · live</span></h4>
+      <div class="tlist" id="tlist"></div>
+    </aside>
+  </div>
+  <span class="scroll" aria-hidden="true"></span>
+</section>
+
+<section id="what">
+  <div class="wrap">
+    <p class="kicker rv">01 · <span lang="ru">Что умеет</span><span lang="en">What it does</span></p>
+    <h2 class="rv"><span lang="ru">Играет как человек. Реагирует быстрее.</span><span lang="en">Plays like a human. Reacts faster.</span></h2>
+    <p class="sub rv"><span lang="ru">Все кадры ниже — реальные снимки с PS5, сделанные ботом во время игры.</span><span lang="en">Every frame below is a real PS5 capture taken by the bot while playing.</span></p>
+    <div class="feats">
+      <article class="feat rv"><figure><img src="{{IMG:sj3}}" alt="Slim Jim" loading="lazy"><span class="tag">Slim Jim</span></figure><div class="b"><h3><span lang="ru">Вскрывает замки</span><span lang="en">Picks locks</span></h3><p><span lang="ru">Подходит к машине, держит △ и крутит правый стик, пока замок не поддастся.</span><span lang="en">Walks up, holds △ and spins the right stick until the lock gives.</span></p><div class="keys"><span class="k">△</span><span class="k">R ⟳</span></div></div></article>
+      <article class="feat rv d1"><figure><img src="{{IMG:hw_2}}" alt="Hotwire" loading="lazy"><span class="tag" lang="ru">Проводка</span><span class="tag" lang="en">Hotwire</span></figure><div class="b"><h3><span lang="ru">Заводит без ключа</span><span lang="en">Hotwires the engine</span></h3><p><span lang="ru">Оба стика по полукругу снизу вверх: левый по правой дуге, правый по левой — и мотор ревёт.</span><span lang="en">Both sticks sweep a half-circle bottom-to-top, left on the right arc, right on the left — engine roars.</span></p><div class="keys"><span class="k">L ◠</span><span class="k">R ◠</span></div></div></article>
+      <article class="feat rv d2"><figure><img src="{{IMG:g6}}" alt="Smash window" loading="lazy"><span class="tag">Smash</span></figure><div class="b"><h3><span lang="ru">Знает, что брать</span><span lang="en">Knows what to take</span></h3><p><span lang="ru">Сканер WAiNK заранее показывает замок и трекер. Машины без ключа пропускает, водителей выкидывает.</span><span lang="en">The WAiNK scanner reveals locks and trackers first. Skips keyless cars, yanks out drivers.</span></p><div class="keys"><span class="k">□</span><span class="k">↑</span></div></div></article>
+      <article class="feat rv"><figure><img src="{{IMG:atk}}" alt="Fight" loading="lazy"><span class="tag" lang="ru">Бой</span><span class="tag" lang="en">Combat</span></figure><div class="b"><h3><span lang="ru">Отбивается за миллисекунды</span><span lang="en">Fights back in milliseconds</span></h3><p><span lang="ru">Читает полоску здоровья прямо с пикселей. Бьют — сразу отвечает, не дожидаясь «мозга».</span><span lang="en">Reads the health bar straight from pixels. Gets hit — hits back instantly, no waiting for the brain.</span></p><div class="keys"><span class="k">L2</span><span class="k">R2</span><span class="k">□</span></div></div></article>
+      <article class="feat rv d1"><figure><img src="{{IMG:g4}}" alt="Police" loading="lazy"><span class="tag" lang="ru">Розыск ★★</span><span class="tag" lang="en">Wanted ★★</span></figure><div class="b"><h3><span lang="ru">Уходит от полиции</span><span lang="en">Escapes the police</span></h3><p><span lang="ru">Считает звёзды розыска. Пешком — убегает, в машине — гонит дальше и прячется.</span><span lang="en">Counts wanted stars. On foot it runs, in a car it keeps driving and ducks.</span></p><div class="keys"><span class="k">L3</span><span class="k">○</span></div></div></article>
+      <article class="feat rv d2"><figure><img src="{{IMG:g3}}" alt="Map waypoint" loading="lazy"><span class="tag" lang="ru">Метка</span><span class="tag" lang="en">Waypoint</span></figure><div class="b"><h3><span lang="ru">Сам едет на задание</span><span lang="en">Drives to missions</span></h3><p><span lang="ru">Ставит точку на розовое задание и включает встроенный автопилот игры. Застрял — рулит сам.</span><span lang="en">Pins the pink mission on the map and engages the game's own autopilot. Stuck? It takes the wheel.</span></p><div class="keys"><span class="k">↓</span><span class="k">Options</span><span class="k">○</span></div></div></article>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="alt">
+  <div class="wrap">
+    <p class="kicker rv">02 · <span lang="ru">Как устроен</span><span lang="en">How it works</span></p>
+    <h2 class="rv"><span lang="ru">Глаза, рефлексы, мозг и руки</span><span lang="en">Eyes, reflexes, brain and hands</span></h2>
+    <p class="sub rv"><span lang="ru">Быстрые слои работают постоянно, медленный «мозг» включается, только когда что-то меняется. Поэтому бот и быстрый, и умный.</span><span lang="en">Fast layers run all the time; the slower brain only wakes up when something changes. That's how it's both quick and smart.</span></p>
+    <div class="arch rv">
+      <svg viewBox="0 0 1000 400" role="img" aria-label="Architecture">
+        <path class="wire" d="M170 190 H300"/><path class="flow f1" d="M170 190 H300"/>
+        <path class="wire" d="M460 150 C520 90 560 80 610 80"/><path class="flow f2" d="M460 150 C520 90 560 80 610 80"/>
+        <path class="wire" d="M460 190 H610"/><path class="flow f2" d="M460 190 H610"/>
+        <path class="wire" d="M460 230 C520 290 560 300 610 300"/><path class="flow f3" d="M460 230 C520 290 560 300 610 300"/>
+        <path class="wire" d="M770 80 C820 80 830 150 850 175"/><path class="flow f4" d="M770 80 C820 80 830 150 850 175"/>
+        <path class="wire" d="M770 190 H850"/><path class="flow f4" d="M770 190 H850"/>
+        <path class="wire" d="M770 300 C820 300 830 230 850 205"/><path class="flow f4" d="M770 300 C820 300 830 230 850 205"/>
+        <path class="wire" d="M915 230 L915 362 Q915 378 899 378 L116 378 Q100 378 100 362 L100 235"/><path class="flow f4" d="M915 230 L915 362 Q915 378 899 378 L116 378 Q100 378 100 362 L100 235"/>
+        <g class="node"><rect x="30" y="145" width="140" height="90" rx="16"/><text x="100" y="183" text-anchor="middle">PS5</text><text class="s" x="100" y="206" text-anchor="middle">Remote Play</text></g>
+        <g class="node"><rect x="300" y="130" width="160" height="120" rx="16"/><text x="380" y="175" text-anchor="middle">Mac</text><text class="s" x="380" y="198" text-anchor="middle">server.py · 8765</text><text class="s" x="380" y="218" text-anchor="middle">chiaki-ng</text></g>
+        <g class="node"><rect x="610" y="40" width="160" height="80" rx="16"/><text x="690" y="75" text-anchor="middle">YOLO11</text><text class="s" x="690" y="97" text-anchor="middle">10 ms · 15 Hz</text></g>
+        <g class="node"><rect x="610" y="150" width="160" height="80" rx="16"/><text x="690" y="185" text-anchor="middle">HUD</text><text class="s" x="690" y="207" text-anchor="middle">~1 ms</text></g>
+        <g class="node"><rect x="610" y="260" width="160" height="80" rx="16"/><text x="690" y="295" text-anchor="middle">Claude</text><text class="s" x="690" y="317" text-anchor="middle">~2.6 s</text></g>
+        <g class="node"><rect x="850" y="150" width="130" height="80" rx="16"/><text x="915" y="185" text-anchor="middle">🎮</text><text class="s" x="915" y="207" text-anchor="middle">DualSense</text></g>
+      </svg>
+      <div class="legend">
+        <span><i style="background:#0A84FF"></i><span lang="ru">Видео с консоли</span><span lang="en">Console video</span></span>
+        <span><i style="background:#30D158"></i><span lang="ru">Глаза и рефлексы — мгновенно</span><span lang="en">Eyes & reflexes — instant</span></span>
+        <span><i style="background:#BF5AF2"></i><span lang="ru">Мозг — по событиям</span><span lang="en">Brain — on events</span></span>
+        <span><i style="background:#FF9F0A"></i><span lang="ru">Кнопки обратно в PS5</span><span lang="en">Buttons back to the PS5</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="heist">
+  <div class="wrap">
+    <p class="kicker rv">03 · <span lang="ru">Угон по шагам</span><span lang="en">A car theft, step by step</span></p>
+    <h2 class="rv"><span lang="ru">Один угон глазами бота</span><span lang="en">One heist through the bot's eyes</span></h2>
+    <p class="sub rv"><span lang="ru">Нажми на шаг — увидишь кадр, который в этот момент видел бот.</span><span lang="en">Tap a step to see the exact frame the bot was looking at.</span></p>
+    <div class="story">
+      <div class="shot rv" id="shot">
+        <img src="{{IMG:yolo_r2}}" alt="" class="on"><img src="{{IMG:sj3}}" alt=""><img src="{{IMG:hw_2}}" alt=""><img src="{{IMG:cin}}" alt="" style="object-fit:contain;background:#111"><img src="{{IMG:drive1}}" alt="">
+      </div>
+      <ol class="tl" id="tl">
+        <li class="on"><span class="n">1</span><div><h4><span lang="ru">Находит машину</span><span lang="en">Spots a car</span></h4><p><span lang="ru">YOLO обводит машины и людей рамками 15 раз в секунду, пилот ведёт к ближайшей.</span><span lang="en">YOLO boxes cars and people 15×/s, the pilot walks to the nearest one.</span></p></div></li>
+        <li><span class="n">2</span><div><h4><span lang="ru">Вскрывает дверь</span><span lang="en">Opens the door</span></h4><p><span lang="ru">Мозг читает подсказку на экране: Slim Jim — △ и вращение стика, Smash — □.</span><span lang="en">The brain reads the on-screen prompt: Slim Jim — △ plus stick spin, Smash — □.</span></p></div></li>
+        <li><span class="n">3</span><div><h4><span lang="ru">Заводит проводами</span><span lang="en">Hotwires it</span></h4><p><span lang="ru">Кольца L и R — два стика по полукругу одновременно.</span><span lang="en">L and R rings — both sticks along half-circles at once.</span></p></div></li>
+        <li><span class="n">4</span><div><h4><span lang="ru">Включает автопилот</span><span lang="en">Engages autopilot</span></h4><p><span lang="ru">Держит ↓ — Quick Navigation, Options — кинокамера, держит ○ — поехали к метке.</span><span lang="en">Hold ↓ for Quick Navigation, Options for cinematic, hold ○ — off to the waypoint.</span></p></div></li>
+        <li><span class="n">5</span><div><h4><span lang="ru">Едет и следит</span><span lang="en">Drives and watches</span></h4><p><span lang="ru">Смотрит на звёзды и здоровье. Застрял — повтор, потом рулит сам. Приехал — задание.</span><span lang="en">Watches stars and health. Stuck — retry, then manual. Arrived — mission time.</span></p></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section id="numbers" class="alt">
+  <div class="wrap">
+    <p class="kicker rv">04 · <span lang="ru">Цифры</span><span lang="en">Numbers</span></p>
+    <h2 class="rv"><span lang="ru">Быстро там, где важно</span><span lang="en">Fast where it matters</span></h2>
+    <div class="stats">
+      <div class="stat rv"><b data-count="1">1</b><span lang="ru">мс — рефлекс по HUD</span><span lang="en">ms — HUD reflex</span></div>
+      <div class="stat rv d1"><b data-count="15">15</b><span lang="ru">кадров/с — пилот с YOLO</span><span lang="en">fps — YOLO pilot</span></div>
+      <div class="stat rv d2"><b>2.6<small style="font-size:.5em">s</small></b><span lang="ru">решение мозга Claude</span><span lang="en">per Claude decision</span></div>
+      <div class="stat rv d3"><b data-count="10">10</b><span lang="ru">× меньше токенов, чем на старте</span><span lang="en">× fewer tokens than day one</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="controls">
+  <div class="wrap">
+    <p class="kicker rv">05 · <span lang="ru">Управление</span><span lang="en">Controls</span></p>
+    <h2 class="rv"><span lang="ru">Бот знает весь геймпад</span><span lang="en">The bot knows the whole pad</span></h2>
+    <p class="sub rv"><span lang="ru">База знаний собрана из ~60 гайдов и проверена на консоли. Выбери режим и нажми кнопку.</span><span lang="en">The knowledge base is built from ~60 guides and verified on the console. Pick a mode, tap a button.</span></p>
+    <div class="tabs rv" id="modes">
+      <button data-mode="foot" aria-pressed="true"><span lang="ru">Пешком</span><span lang="en">On foot</span></button>
+      <button data-mode="car" aria-pressed="false"><span lang="ru">Машина</span><span lang="en">Car</span></button>
+      <button data-mode="heli" aria-pressed="false"><span lang="ru">Вертолёт</span><span lang="en">Helicopter</span></button>
+      <button data-mode="plane" aria-pressed="false"><span lang="ru">Самолёт</span><span lang="en">Plane</span></button>
+    </div>
+    <div class="pad">
+      <div class="padwrap rv" id="padsvg"><svg class="pados" viewBox="0 -118 900 738" role="group" aria-label="Gamepad">
+  <defs>
+    <linearGradient id="sunset2" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="606"><stop offset="0" stop-color="#3B2BD9"/><stop offset=".45" stop-color="#B03FD8"/><stop offset=".75" stop-color="#FF5FA2"/><stop offset="1" stop-color="#FFB36B"/></linearGradient>
+    <clipPath id="bodyT"><path transform="matrix(1.3975 0 0 1.7616 2.795 -102.174)" d="M170 74 C222 58 418 58 470 74 C522 80 562 98 588 136 C618 186 642 292 627 350 C614 392 560 402 534 366 C514 336 490 298 454 288 L186 288 C150 298 126 336 106 366 C80 402 26 392 13 350 C-2 292 22 186 52 136 C78 98 118 80 170 74 Z"/></clipPath>
+    <filter id="dropT" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="22" stdDeviation="20" flood-color="#000" flood-opacity=".45"/></filter>
+  </defs>
+  <g class="bt trig" data-b="L2" tabindex="0" transform="translate(0,-40)"><path transform="matrix(1.3975 0 0 1.7616 2.795 -102.174)" d="M126 80 Q154 36 214 40 Q232 44 232 66 L232 104 L126 108 Z"/></g>
+  <g class="bt trig" data-b="R2" tabindex="0" transform="translate(0,-40)"><path transform="matrix(1.3975 0 0 1.7616 2.795 -102.174)" d="M514 80 Q486 36 426 40 Q408 44 408 66 L408 104 L514 108 Z"/></g>
+  <g class="bt trig" data-b="L1" tabindex="0"><path d="M112 80 C116 22 150 -8 204 -10 L304 -10 Q326 -10 326 12 L326 28 Z"/></g>
+  <g class="bt trig" data-b="R1" tabindex="0"><path d="M788 80 C784 22 750 -8 696 -10 L596 -10 Q574 -10 574 12 L574 28 Z"/></g>
+  <path filter="url(#dropT)" fill="url(#sunset2)" transform="matrix(1.3975 0 0 1.7616 2.795 -102.174)" d="M170 74 C222 58 418 58 470 74 C522 80 562 98 588 136 C618 186 642 292 627 350 C614 392 560 402 534 366 C514 336 490 298 454 288 L186 288 C150 298 126 336 106 366 C80 402 26 392 13 350 C-2 292 22 186 52 136 C78 98 118 80 170 74 Z"/>
+  <image href="{{IMG:pad}}" x="0" y="0" width="900" height="606" clip-path="url(#bodyT)" preserveAspectRatio="none"/>
+  <path fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1" transform="matrix(1.3975 0 0 1.7616 2.795 -102.174)" d="M170 74 C222 58 418 58 470 74 C522 80 562 98 588 136 C618 186 642 292 627 350 C614 392 560 402 534 366 C514 336 490 298 454 288 L186 288 C150 298 126 336 106 366 C80 402 26 392 13 350 C-2 292 22 186 52 136 C78 98 118 80 170 74 Z" vector-effect="non-scaling-stroke"/>
+  <text class="tl" x="250" y="-92">L2</text><text class="tl" x="650" y="-92">R2</text><text class="tl sm2" x="214" y="12">L1</text><text class="tl sm2" x="686" y="12">R1</text>
+  <g class="bt" data-b="TOUCH" tabindex="0"><path class="hz" d="M285 18 L618 18 Q636 18 634 36 L624 150 Q620 190 588 199 L312 199 Q280 190 276 150 L266 36 Q264 18 285 18 Z"/></g><g class="bt" data-b="OPT" tabindex="0"><rect x="646" y="48" width="28" height="44" rx="14"/></g><g class="bt" data-b="UP" tabindex="0"><circle cx="172" cy="118" r="30"/></g><g class="bt" data-b="DOWN" tabindex="0"><circle cx="172" cy="218" r="30"/></g><g class="bt" data-b="LEFT" tabindex="0"><circle cx="124" cy="170" r="30"/></g><g class="bt" data-b="RIGHT" tabindex="0"><circle cx="218" cy="170" r="30"/></g><g class="bt" data-b="TRI" tabindex="0"><circle cx="728" cy="105" r="32"/></g><g class="bt" data-b="SQ" tabindex="0"><circle cx="662" cy="172" r="32"/></g><g class="bt" data-b="CIR" tabindex="0"><circle cx="795" cy="172" r="32"/></g><g class="bt" data-b="X" tabindex="0"><circle cx="728" cy="240" r="32"/></g><g class="bt" data-b="L3" tabindex="0"><circle cx="306" cy="294" r="40"/></g><g class="bt" data-b="R3" tabindex="0"><circle cx="591" cy="294" r="40"/></g>
+</svg></div>
+      <div class="info rv d1" id="info" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="download" class="alt">
+  <i id="install" class="anchor" aria-hidden="true"></i>
+  <div class="wrap">
+    <p class="kicker rv">06 · <span lang="ru">Скачать</span><span lang="en">Download</span></p>
+    <h2 class="rv"><span lang="ru">Скачай, открой — и бот играет</span><span lang="en">Download, open — and the bot plays</span></h2>
+    <p class="sub rv"><span lang="ru">Готовое приложение, без терминала: мастер сам найдёт PS5 в сети и проведёт через привязку.</span><span lang="en">A ready-made app, no terminal required: the setup wizard finds your PS5 on the network and walks you through linking.</span></p>
+
+    <div class="dl rv" id="dl" data-os="any">
+      <div class="dl-app">
+        <span class="dl-ico"><img src="{{IMG:markt}}" alt=""></span>
+        <div class="dl-name">
+          <b>Apofiz Play · GTA6 PS5 AI</b>
+          <span class="dl-meta"><b class="v" id="relv">{{REL:version}}</b><span class="vfb"><span lang="ru">Последняя версия</span><span lang="en">Latest release</span></span><span class="rd" id="reld">{{REL:date}}</span><span><span lang="ru">Бесплатно · открытый код</span><span lang="en">Free · open source</span></span></span>
+        </div>
+      </div>
+      <div class="dl-btns">
+        <a class="btn pri dlb dl-mac" href="{{DL:mac}}" data-asset="mac"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.8-1-2.8-4zM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></svg><span class="dlt"><span><span lang="ru">Скачать для Mac</span><span lang="en">Download for Mac</span></span><small>Apple Silicon · .dmg<span class="sz" data-size="mac">{{REL:mac_size}}</span></small></span></a>
+        <a class="btn pri dlb dl-win" href="{{DL:win}}" data-asset="win"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.3l7.4-1v7.2H3zM11.3 4.2L21 2.8v8.7h-9.7zM3 12.5h7.4v7.2L3 18.7zM11.3 12.5H21v8.7l-9.7-1.4z"/></svg><span class="dlt"><span><span lang="ru">Скачать для Windows</span><span lang="en">Download for Windows</span></span><small>Windows 10/11 x64 · .exe<span class="sz" data-size="win">{{REL:win_size}}</span></small></span></a>
+      </div>
+      <div class="dl-foot">
+        <span class="dl-note dl-ifother"><span lang="ru">Открой эту страницу на Mac или ПК — бот работает с компьютера рядом с PS5.</span><span lang="en">Open this page on your Mac or PC — the bot runs on a computer next to your PS5.</span></span>
+        <a class="dl-swap dl-ifmac" href="{{DL:win}}"><span lang="ru">Нужна версия для Windows?</span><span lang="en">Need the Windows version?</span></a>
+        <a class="dl-swap dl-ifwin" href="{{DL:mac}}"><span lang="ru">Нужна версия для Mac?</span><span lang="en">Need the Mac version?</span></a>
+        <span class="sp"></span>
+        <a class="dl-link" href="#src" id="srcLink"><span lang="ru">Другие платформы / сборка из исходников</span><span lang="en">Other platforms / build from source</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a class="dl-link" href="{{DL:latest}}"><span lang="ru">Все релизы</span><span lang="en">All releases</span></a>
+      </div>
+      <p class="dl-norel" id="dlNorel"><span lang="ru">Первая сборка ещё в пути — пока можно собрать из исходников (ниже, ~20 минут).</span><span lang="en">The first build is on its way — for now you can build from source (below, ~20 minutes).</span></p>
+    </div>
+
+    <!-- PS5: что разрешить заранее -->
+    <div class="pre">
+      <div class="pre-h rv">
+        <span class="pre-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.4v.1"/></svg></span>
+        <div>
+          <h3><span lang="ru">Перед стартом: разреши это на PS5</span><span lang="en">Before you start: allow these on your PS5</span></h3>
+          <p><span lang="ru">Четыре настройки на самой консоли. Без любой из них приложение не подключится — проверь заранее, это 2 минуты с геймпадом.</span><span lang="en">Four settings on the console itself. Miss any one and the app can't connect — check them first, it's two minutes with the controller.</span></p>
+        </div>
+      </div>
+      <div class="pcards">
+        <article class="pcard rv">
+          <div class="pc-top"><span class="pnum">1</span><h4><span lang="ru">Включи Remote Play</span><span lang="en">Enable Remote Play</span></h4></div>
+          <div class="pui" aria-hidden="true">
+            <div class="crumb"><span lang="ru">Настройки › Система › Дистанционное воспроизведение</span><span lang="en">Settings › System › Remote Play</span></div>
+            <div class="prow" style="--td:.55s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="pl"><span lang="ru">Включить дистанционное воспроизведение</span><span lang="en">Enable Remote Play</span></span><i class="tg"></i></div>
+          </div>
+          <p><span lang="ru">Главный переключатель. Выключен — консоль просто не отвечает приложению.</span><span lang="en">The master switch. If it's off, the console simply ignores the app.</span></p>
+        </article>
+
+        <article class="pcard rv d1">
+          <div class="pc-top"><span class="pnum">2</span><h4><span lang="ru">Режим покоя: оставайся на связи</span><span lang="en">Rest mode: stay connected</span></h4></div>
+          <div class="pui" aria-hidden="true">
+            <div class="crumb"><span lang="ru">Система › Экономия энергии › Функции в режиме покоя</span><span lang="en">System › Power Saving › Features in Rest Mode</span></div>
+            <div class="prow" style="--td:.6s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r=".8" fill="currentColor"/></svg><span class="pl"><span lang="ru">Оставаться подключённым к интернету</span><span lang="en">Stay Connected to the Internet</span></span><i class="tg"></i></div>
+            <div class="prow" style="--td:.95s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span class="pl"><span lang="ru">Разрешить включение PS5 через сеть</span><span lang="en">Enable Turning On PS5 from Network</span></span><i class="tg"></i></div>
+          </div>
+          <p><span lang="ru">Тогда бот сам будит консоль из режима покоя — не нужно подходить к ней.</span><span lang="en">Then the bot wakes the console from rest mode itself — no need to walk over.</span></p>
+        </article>
+
+        <article class="pcard rv">
+          <div class="pc-top"><span class="pnum">3</span><h4><span lang="ru">Тот же аккаунт PSN</span><span lang="en">The same PSN account</span></h4></div>
+          <div class="pui" aria-hidden="true">
+            <div class="crumb"><span lang="ru">Пользователи и учётные записи › Другое</span><span lang="en">Users and Accounts › Other</span></div>
+            <div class="prow user" style="--td:.55s"><span class="ava">A</span><span class="pl"><span lang="ru">Вошёл тот же PSN, что в приложении</span><span lang="en">Same PSN as in the app, signed in</span></span><i class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i></div>
+            <div class="prow" style="--td:.95s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M16.5 5.5a3 3 0 0 1 0 5.6M18 14.5a5 5 0 0 1 3 4.5"/></svg><span class="pl"><span lang="ru">Remote Play разрешён этому пользователю</span><span lang="en">Remote Play allowed for this user</span></span><i class="tg"></i></div>
+          </div>
+          <p><span lang="ru">На PS5 должен быть тот же пользователь, под которым ты входишь в приложение, и ему разрешён Remote Play (у семейных и детских аккаунтов — в родительском контроле). Иначе — ошибка</span><span lang="en">The PS5 must have the same user you sign in with in the app, and that user must be allowed Remote Play (for family and child accounts — in parental controls). Otherwise you get error</span> <code class="err">0x80108b12</code></p>
+        </article>
+
+        <article class="pcard rv d1">
+          <div class="pc-top"><span class="pnum">4</span><h4><span lang="ru">Привяжи устройство</span><span lang="en">Link the device</span></h4></div>
+          <div class="pui" aria-hidden="true">
+            <div class="crumb"><span lang="ru">Дистанционное воспроизведение › Связать устройство</span><span lang="en">Remote Play › Link Device</span></div>
+            <div class="pcode"><i style="--td:.5s">4</i><i style="--td:.58s">8</i><i style="--td:.66s">2</i><i style="--td:.74s">1</i><b></b><i style="--td:.82s">0</i><i style="--td:.9s">9</i><i style="--td:.98s">3</i><i style="--td:1.06s">7</i></div>
+          </div>
+          <p><span lang="ru">PS5 покажет 8-значный код — введи его в мастере приложения. Делается один раз, ключи остаются только у тебя.</span><span lang="en">The PS5 shows an 8-digit code — type it into the app's wizard. One time only; the keys stay on your computer.</span></p>
+        </article>
+      </div>
+    </div>
+
+    <!-- после установки -->
+    <div class="flow rv" id="flow">
+      <h3><span lang="ru">Что будет после установки</span><span lang="en">How it works after install</span></h3>
+      <ol class="fsteps" id="fsteps">
+        <li><button type="button"><span class="fdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span class="ft"><b><span lang="ru">Скачай</span><span lang="en">Download</span></b><small><span lang="ru">.dmg или .exe</span><span lang="en">.dmg or .exe</span></small></span></button></li>
+        <li><button type="button"><span class="fdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6.5h.1M10 6.5h.1"/></svg></span><span class="ft"><b><span lang="ru">Открой</span><span lang="en">Open</span></b><small><span lang="ru">как обычное приложение</span><span lang="en">like any other app</span></small></span></button></li>
+        <li><button type="button"><span class="fdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M20.5 20.5l-4.8-4.8"/></svg></span><span class="ft"><b><span lang="ru">Мастер найдёт PS5</span><span lang="en">Wizard finds your PS5</span></b><small><span lang="ru">сам, в твоей сети</span><span lang="en">on your network, by itself</span></small></span></button></li>
+        <li><button type="button"><span class="fdot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg></span><span class="ft"><b><span lang="ru">Разреши</span><span lang="en">Allow</span></b><small><span lang="ru">вход в PSN + код привязки</span><span lang="en">PSN sign-in + link code</span></small></span></button></li>
+        <li><button type="button"><span class="fdot"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.2-6.5a1 1 0 0 0 0-1.7L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg></span><span class="ft"><b><span lang="ru">Играй</span><span lang="en">Play</span></b><small><span lang="ru">выбери задачу — бот поехал</span><span lang="en">pick a goal — the bot is off</span></small></span></button></li>
+      </ol>
+    </div>
+
+    <details class="src rv" id="src">
+      <summary><span class="src-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></span><span class="src-t"><b><span lang="ru">Другие платформы / сборка из исходников</span><span lang="en">Other platforms / build from source</span></b><small><span lang="ru">Linux, Intel Mac, разработчикам — семь шагов, около 20 минут</span><span lang="en">Linux, Intel Macs, developers — seven steps, about 20 minutes</span></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="src-b">
+    <div class="need rv">
+      <span>🍎 <span lang="ru">Mac на Apple Silicon</span><span lang="en">Apple Silicon Mac</span></span>
+      <span>🎮 PS5 + GTA VI</span>
+      <span>🔌 <span lang="ru">Кабель до роутера (лучше)</span><span lang="en">Ethernet (recommended)</span></span>
+      <span>🧠 <span lang="ru">Подписка Claude</span><span lang="en">Claude subscription</span></span>
+      <span>🐍 Python 3.12</span>
+    </div>
+    <div class="steps">
+      <div class="step rv"><span class="num">1</span><div><h3><span lang="ru">Включи Remote Play на PS5</span><span lang="en">Enable Remote Play on the PS5</span></h3><p><span lang="ru">Настройки → Система → Дистанционное воспроизведение → Включить. В «Энергосбережении» разреши включение по сети — тогда бот сам будит консоль.</span><span lang="en">Settings → System → Remote Play → On. Under Power Saving allow turning on from the network so the bot can wake the console.</span></p></div></div>
+      <div class="step rv"><span class="num">2</span><div><h3><span lang="ru">Скачай проект</span><span lang="en">Get the code</span></h3>
+        <div class="cmd"><pre>git clone https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz.git
+cd GTA6-PS5-AI-by-Apofiz</pre><button class="copy" type="button">Copy</button></div></div></div>
+      <div class="step rv"><span class="num">3</span><div><h3><span lang="ru">Поставь зависимости</span><span lang="en">Install dependencies</span></h3>
+        <div class="cmd"><pre>python3.12 -m venv .venv
+.venv/bin/pip install -r requirements.txt ultralytics</pre><button class="copy" type="button">Copy</button></div>
+        <p style="margin-top:10px"><span lang="ru">YOLO11 (6 МБ) скачается сам при первом запуске.</span><span lang="en">YOLO11 weights (6 MB) download on first run.</span></p></div></div>
+      <div class="step rv"><span class="num">4</span><div><h3><span lang="ru">Собери мост к консоли</span><span lang="en">Build the console bridge</span></h3>
+        <div class="cmd"><pre>.venv/bin/python tools/build_native.py   <span class="c"># → native/libps5bridge.dylib</span></pre><button class="copy" type="button">Copy</button></div>
+        <p style="margin-top:10px"><span lang="ru">Уже собранная библиотека для Apple Silicon лежит в репозитории — шаг можно пропустить.</span><span lang="en">A prebuilt Apple Silicon library ships in the repo — you can skip this.</span></p></div></div>
+      <div class="step rv"><span class="num">5</span><div><h3><span lang="ru">Укажи IP консоли и запусти сервер</span><span lang="en">Set the console IP and start the server</span></h3>
+        <div class="cmd"><pre>cp .env.schema .env.local      <span class="c"># PS5_HOST=192.168.x.x</span>
+./start.sh                     <span class="c"># → http://127.0.0.1:8765</span></pre><button class="copy" type="button">Copy</button></div></div></div>
+      <div class="step rv"><span class="num">6</span><div><h3><span lang="ru">Привяжи консоль</span><span lang="en">Link the console</span></h3><p><span lang="ru">Открой http://127.0.0.1:8765 → войди в PSN → на PS5: Настройки → Система → Дистанционное воспроизведение → Связать устройство → введи 8-значный код. Делается один раз, ключи хранятся только у тебя в <code>~/.ps5-remote/</code>.</span><span lang="en">Open http://127.0.0.1:8765 → sign in to PSN → on the PS5: Settings → System → Remote Play → Link Device → enter the 8-digit code. One time only; keys stay on your Mac in <code>~/.ps5-remote/</code>.</span></p></div></div>
+      <div class="step rv"><span class="num">7</span><div><h3><span lang="ru">Подключи мозг и запусти бота</span><span lang="en">Connect the brain and run the bot</span></h3><p><span lang="ru">Установи Claude Code и войди своей подпиской. Запусти GTA VI, поставь метку на карте — и:</span><span lang="en">Install Claude Code and sign in with your subscription. Launch GTA VI, set a waypoint — then:</span></p>
+        <div class="cmd"><pre>npm i -g @anthropic-ai/claude-code && claude   <span class="c"># sign in once</span>
+.venv/bin/python agent.py car 10              <span class="c"># steal a car → drive to the waypoint, 10 min</span></pre><button class="copy" type="button">Copy</button></div>
+        <p style="margin-top:10px"><span lang="ru">Оверлей с «мыслями бота» для OBS: </span><span lang="en">OBS overlay with live bot thoughts: </span><code>http://127.0.0.1:8765/overlay</code></p></div></div>
+    </div>
+      </div>
+    </details>
+    <div class="trouble">
+      <div class="rv"><b lang="ru">Картинка сыпется или замирает</b><b lang="en">Video breaks up or freezes</b><p><span lang="ru">Это Wi-Fi. Подключи Мак кабелем или поставь рядом с роутером.</span><span lang="en">That's Wi-Fi. Plug the Mac in with a cable or move it next to the router.</span></p></div>
+      <div class="rv d1"><b lang="ru">«Remote Play уже используется»</b><b lang="en">"Remote Play already in use"</b><p><span lang="ru">Закрой другие клиенты Remote Play, подожди ~8 секунд и подключись снова.</span><span lang="en">Close other Remote Play apps, wait ~8 seconds, connect again.</span></p></div>
+      <div class="rv d2"><b lang="ru">Машина не заводится</b><b lang="en">The car won't start</b><p><span lang="ru">Подсказка Clone Key — машина без ключа, нужен клонер из главы 3. Бот сам бросит её и найдёт другую.</span><span lang="en">A Clone Key prompt means keyless — you need the cloner from chapter 3. The bot drops it and finds another.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="clips">
+  <div class="wrap">
+    <p class="kicker rv">07 · <span lang="ru">Шортсы</span><span lang="en">Shorts</span></p>
+    <h2 class="rv"><span lang="ru">Бот сам режет вирусные клипы</span><span lang="en">The bot cuts its own viral clips</span></h2>
+    <p class="sub rv"><span lang="ru">Погони, перестрелки, угоны и фейлы — бот знает, где всплеск, и режет по правилам, которые набирают миллионы.</span><span lang="en">Chases, shootouts, thefts and fails — the bot knows where the spikes are and cuts them by rules that pull millions of views.</span></p>
+    <div class="clips">
+      <div class="clip rv"><b>≤2s</b><p><span lang="ru">Хук сразу, без вступлений — зритель решает за 1,5 секунды.</span><span lang="en">Hook right away, no intro — viewers decide in 1.5 seconds.</span></p></div>
+      <div class="clip rv d1"><b>20–40s</b><p><span lang="ru">Короче — больше досмотров, а их любит алгоритм.</span><span lang="en">Shorter means more full watches — the algorithm loves that.</span></p></div>
+      <div class="clip rv d2"><b>9:16</b><p><span lang="ru">Вертикаль, пословные субтитры, мысли бота поверх.</span><span lang="en">Vertical, word-by-word captions, bot thoughts on top.</span></p></div>
+      <div class="clip rv d3"><b>3×</b><p><span lang="ru">Один клип сразу в TikTok, Shorts и Reels.</span><span lang="en">One clip to TikTok, Shorts and Reels at once.</span></p></div>
+    </div>
+    <div class="cliprow">
+      <div class="phone9 rv"><img src="{{IMG:g4}}" alt="" loading="lazy"><div class="hook" lang="ru">ИИ угнал тачку на глазах у копов</div><div class="hook" lang="en">AI steals a car right in front of cops</div><div class="subw" id="subw">WAIT</div></div>
+      <div class="rv d1"><h3 style="margin:0 0 8px;font:700 22px/1.25 inherit"><span lang="ru">Свой геймплей — без проблем с правами</span><span lang="en">Your own gameplay — no copyright headaches</span></h3><p style="margin:0;color:var(--muted)"><span lang="ru">Бот играет сам, значит видео твоё: никаких страйков за чужие стримы. Музыку в фоне бот не берёт, чтобы клип не заблокировали.</span><span lang="en">The bot plays itself, so the footage is yours: no strikes for re-uploading streams. It avoids moments with background music so clips don't get blocked.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="contribute" class="alt">
+  <div class="wrap">
+    <p class="kicker rv">08 · <span lang="ru">Участвовать</span><span lang="en">Contribute</span></p>
+    <h2 class="rv"><span lang="ru">Сделаем бота круче вместе</span><span lang="en">Let's make it better together</span></h2>
+    <div class="contrib">
+      <div class="rv"><h3>Fork → Pull Request</h3><p><span lang="ru">Сделай форк, добавь навык или фикс и пришли PR. Каждый PR проверяется перед слиянием.</span><span lang="en">Fork it, add a skill or a fix, open a PR. Every PR is reviewed before merge.</span></p></div>
+      <div class="rv d1"><h3>Issues</h3><p><span lang="ru">Нашёл баг или есть идея — открой issue. Задачи для новичков помечены «good first issue».</span><span lang="en">Found a bug or have an idea — open an issue. Starter tasks are labelled "good first issue".</span></p></div>
+      <div class="rv d2"><h3><span lang="ru">База знаний</span><span lang="en">Knowledge base</span></h3><p><span lang="ru">Знаешь трюк в GTA 6? Добавь его в <code>knowledge/</code> — бот станет умнее для всех.</span><span lang="en">Know a GTA 6 trick? Add it to <code>knowledge/</code> and the bot gets smarter for everyone.</span></p></div>
+    </div>
+    <div class="cta2 rv">
+      <div class="glow" aria-hidden="true"><i class="gp"></i><i class="gb"></i><i class="gr"></i></div>
+      <div class="cta2t"><div class="wanted" aria-hidden="true"><i style="--i:0"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6.1 6.7.8-5 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-5-4.6 6.7-.8z"/></svg></i><i style="--i:1"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6.1 6.7.8-5 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-5-4.6 6.7-.8z"/></svg></i><i style="--i:2"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6.1 6.7.8-5 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-5-4.6 6.7-.8z"/></svg></i><i style="--i:3"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6.1 6.7.8-5 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-5-4.6 6.7-.8z"/></svg></i><i style="--i:4"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.9 6.1 6.7.8-5 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6-5-4.6 6.7-.8z"/></svg></i></div><h3><span lang="ru">Поставь звезду и попробуй сегодня</span><span lang="en">Star it and try it today</span></h3></div>
+      <div class="ctas"><a class="btn pri" href="https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz"><svg class="gstar" viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z"/></svg>GitHub</a><a class="btn sec" href="https://apofiz.com">apofiz.com</a></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="secnav" id="secnav" aria-label="Sections"><button type="button" id="secUp" aria-label="Previous section"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button><i></i><button type="button" id="secDown" aria-label="Next section"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button></div>
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <a class="brand" href="https://apofiz.com"><img src="{{IMG:markt}}" alt="" style="width:40px;height:auto;border-radius:0"><span>Made with ❤️ by Apofiz</span></a>
+      <span><span lang="ru">Основа пульта — </span><span lang="en">Remote based on </span><a href="https://github.com/Jeff-Kazzee/ps5-agent-remote">ps5-agent-remote</a> (Jeff Kazzee, MIT) · <a href="https://github.com/streetpea/chiaki-ng">chiaki-ng</a> · <a href="https://github.com/ultralytics/ultralytics">Ultralytics</a></span>
+    </div>
+    <p><span lang="ru">Grand Theft Auto VI — товарный знак Rockstar Games / Take-Two Interactive. PlayStation и PS5 — товарные знаки Sony Interactive Entertainment. Проект с ними не связан. Используй только со своей консолью и своей копией игры.</span><span lang="en">Grand Theft Auto VI is a trademark of Rockstar Games / Take-Two Interactive. PlayStation and PS5 are trademarks of Sony Interactive Entertainment. This project is not affiliated with them. Use only with your own console and your own copy of the game.</span></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var html=document.documentElement,body=document.body;
+  var rm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var mqDark=window.matchMedia("(prefers-color-scheme: dark)");
+  function autoLang(){var L=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||"en"]);return L.some(function(x){return /^(ru|uk|be|kk)/i.test(x)})?"ru":"en"}
+  function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  var langPref="auto",themePref="auto";
+  function setLang(p){langPref=p||"auto";var l=langPref==="auto"?autoLang():langPref;html.setAttribute("data-lang",l);html.lang=l;
+    document.querySelectorAll("[data-setlang]").forEach(function(b){b.setAttribute("aria-checked",String(b.dataset.setlang===langPref))});var cd=document.querySelector(".lbtn .code");if(cd)cd.textContent=l.toUpperCase();store("gta6ai-lang",langPref);
+    if(typeof renderInfo==="function"&&window.__ready){renderInfo();restartThoughts()}}
+  function setTheme(p){themePref=p||"auto";var t=themePref==="auto"?(mqDark.matches?"dark":"light"):themePref;html.setAttribute("data-theme",t);html.setAttribute("data-themepref",themePref);
+    document.querySelectorAll("[data-settheme]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.settheme===themePref))});store("gta6ai-theme",themePref)}
+  (mqDark.addEventListener?mqDark.addEventListener.bind(mqDark,"change"):mqDark.addListener.bind(mqDark))(function(){if(themePref==="auto")setTheme("auto")});
+  addEventListener("languagechange",function(){if(langPref==="auto")setLang("auto")});
+  setTheme(load("gta6ai-theme")||"auto");setLang(load("gta6ai-lang")||"auto");
+  document.querySelectorAll("[data-setlang]").forEach(function(b){b.onclick=function(){setLang(b.dataset.setlang)}});
+  document.querySelectorAll("[data-settheme]").forEach(function(b){b.onclick=function(){setTheme(b.dataset.settheme)}});
+
+  // меню
+  var burger=document.getElementById("burger");
+  function nav(o){body.classList.toggle("nav-open",o);burger.setAttribute("aria-expanded",String(o))}
+  burger.onclick=function(){nav(!body.classList.contains("nav-open"))};
+  document.getElementById("scrim").onclick=function(){nav(false)};
+  document.querySelectorAll(".nav a").forEach(function(a){a.addEventListener("click",function(){nav(false)})});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")nav(false)});
+
+  // тема: Авто → Светлая → Тёмная
+  var tb=document.getElementById("tbtn"),ORDER=["auto","light","dark"],TL={auto:["Тема: системная","Theme: system"],light:["Тема: светлая","Theme: light"],dark:["Тема: тёмная","Theme: dark"]};
+  function tlabel(){var i=html.getAttribute("data-lang")==="en"?1:0;tb.setAttribute("aria-label",TL[themePref][i]);tb.title=TL[themePref][i]}
+  tb.onclick=function(){setTheme(ORDER[(ORDER.indexOf(themePref)+1)%3]);tlabel()};tlabel();
+  // язык: выпадающий список
+  var lb=document.getElementById("lbtn"),lm=document.getElementById("lmenu");
+  function lmo(o){lm.classList.toggle("open",o);lb.setAttribute("aria-expanded",String(o))}
+  lb.onclick=function(e){e.stopPropagation();lmo(!lm.classList.contains("open"))};
+  lm.querySelectorAll("[data-setlang]").forEach(function(b){b.addEventListener("click",function(){lmo(false);tlabel();lb.focus()})});
+  document.addEventListener("click",function(e){if(!lm.contains(e.target)&&!lb.contains(e.target))lmo(false)});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")lmo(false)});
+
+  // стрелки по разделам
+  (function(){var secs=[].slice.call(document.querySelectorAll("main > section")),box=document.getElementById("secnav"),up=document.getElementById("secUp"),dn=document.getElementById("secDown"),mob=matchMedia("(max-width:640px)");
+    function cur(){var mid=104,k=0;secs.forEach(function(x,i){if(x.getBoundingClientRect().top<=mid)k=i});return k}
+    function go(d){var i=Math.max(0,Math.min(secs.length-1,cur()+d));scrollTo({top:i===0?0:secs[i].getBoundingClientRect().top+scrollY-64,behavior:rm?"auto":"smooth"})}
+    up.onclick=function(){go(-1)};dn.onclick=function(){go(1)};
+    document.addEventListener("keydown",function(e){var t=e.target;if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"))return;if(e.key==="PageDown"){e.preventDefault();go(1)}if(e.key==="PageUp"){e.preventDefault();go(-1)}});
+    var idle,tk=false;function sync(){var end=innerHeight+scrollY>=document.documentElement.scrollHeight-4;box.classList.toggle("show",scrollY>120);up.disabled=scrollY<10;dn.disabled=end}
+    addEventListener("scroll",function(){if(!tk){tk=true;requestAnimationFrame(function(){tk=false;sync()})}if(mob.matches){box.classList.add("scrolling");clearTimeout(idle);idle=setTimeout(function(){box.classList.remove("scrolling")},900)}},{passive:true});
+    addEventListener("resize",sync);sync()})();
+
+  // прогресс
+  var pr=document.getElementById("progress");
+  function onScroll(){var h=document.documentElement.scrollHeight-innerHeight;pr.style.transform="scaleX("+(h>0?scrollY/h:0)+")"}
+  addEventListener("scroll",onScroll,{passive:true});onScroll();
+
+  // появление
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.15,rootMargin:"0px 0px -6% 0px"});
+  document.querySelectorAll(".rv").forEach(function(el){io.observe(el)});
+  requestAnimationFrame(function(){document.querySelectorAll(".hero .rv").forEach(function(el){el.classList.add("in")})});
+  setTimeout(function(){document.querySelectorAll(".rv:not(.in)").forEach(function(el){var r=el.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0)el.classList.add("in")})},1200);
+
+  // hero-слайдшоу
+  var imgs=document.querySelectorAll("#reel img"),ri=0;
+  if(!rm)setInterval(function(){imgs[ri].classList.remove("on");ri=(ri+1)%imgs.length;imgs[ri].classList.add("on")},5200);
+
+  // мысли бота
+  var TH={
+    ru:[["i","👁 вижу"," серебристый Mustang, подсказка Clone Key"],["r","✗"," без ключа — бросаю, ищу другую"],["i","👁 вижу"," пикап, за рулём водитель"],["w","△"," выкидываю водителя — мотор заведён"],["i","🗺"," метка: задание TR, 0.18 mi"],["w","↓ + Options + ○"," автопилот включён"],["r","★★"," копы! держу газ, пригибаюсь"],["w","✓"," приехали к заданию"]],
+    en:[["i","👁 see"," silver Mustang, Clone Key prompt"],["r","✗"," keyless — dropping it, finding another"],["i","👁 see"," pickup truck with a driver"],["w","△"," yank the driver — engine running"],["i","🗺"," waypoint: mission TR, 0.18 mi"],["w","↓ + Options + ○"," autopilot on"],["r","★★"," cops! foot down, ducking"],["w","✓"," arrived at the mission"]]
+  };
+  var tl=document.getElementById("tlist"),tt=null,tk=0;
+  function restartThoughts(){clearInterval(tt);tl.innerHTML="";tk=0;var L=TH[html.getAttribute("data-lang")]||TH.ru;
+    function add(){var x=L[tk%L.length];var d=document.createElement("div");d.innerHTML='<i class="'+x[0]+'">'+x[1]+'</i>'+x[2];tl.appendChild(d);requestAnimationFrame(function(){d.classList.add("in")});while(tl.children.length>5)tl.removeChild(tl.firstChild);tk++}
+    for(var i=0;i<(rm?5:1);i++)add(); if(!rm)tt=setInterval(add,1700)}
+
+  // угон по шагам
+  var steps=document.querySelectorAll("#tl li"),shots=document.querySelectorAll("#shot img");
+  function pick(n){steps.forEach(function(s,i){s.classList.toggle("on",i===n)});shots.forEach(function(s,i){s.classList.toggle("on",i===n)})}
+  steps.forEach(function(s,i){s.addEventListener("click",function(){pick(i)});s.tabIndex=0;s.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(i)}})});
+  if(matchMedia("(min-width:901px)").matches){var sio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)pick([].indexOf.call(steps,e.target))})},{rootMargin:"-45% 0px -45% 0px"});steps.forEach(function(s){sio.observe(s)})}
+
+  // геймпад
+  var C={
+   foot:{L2:["Прицел / захват цели","Aim / lock on"],R2:["Выстрел","Shoot"],L1:["Коротко — убрать оружие, держать — колесо","Tap holster, hold weapon wheel"],R1:["Укрытие","Take cover"],TOUCH:["Карта","Map"],OPT:["Пауза","Pause"],UP:["Телефон, держать — сканер WAiNK","Phone, hold for WAiNK scanner"],DOWN:["Держать — Quick Navigation","Hold — Quick Navigation"],RIGHT:["Держать — меню напарника","Hold — partner menu"],TRI:["Действие / сесть в машину / Slim Jim","Interact / enter vehicle / Slim Jim"],SQ:["Удар, разбить стекло","Melee, smash window"],CIR:["Присесть","Crouch"],X:["Прыжок / перелезть","Jump / climb"],L3:["Бег, дважды — спринт","Run, twice to sprint"],R3:["Держать — смотреть назад","Hold — look behind"]},
+   car:{R2:["Газ","Throttle"],L2:["Тормоз / назад","Brake / reverse"],X:["Ручник, дрифт","Handbrake, drift"],L3:["Сигнал / нитро","Horn / nitro"],R1:["Стрельба из машины","Drive-by"],TRI:["Выйти, дважды — выпрыгнуть","Exit, double-tap to bail"],CIR:["Держать — пригнуться","Hold — duck"],DOWN:["Автопилот: держать ↓ → Options → держать ○","Autopilot: hold ↓ → Options → hold ○"],LEFT:["Держать — меню машины: радио, фары","Hold — vehicle menu: radio, lights"],OPT:["Кинокамера в Quick Navigation","Cinematic in Quick Navigation"],TOUCH:["Карта","Map"],R3:["Смотреть назад","Look behind"]},
+   heli:{R2:["Вверх","Ascend"],L2:["Вниз","Descend"],SQ:["Поворот влево","Yaw left"],CIR:["Поворот вправо","Yaw right"],L3:["Левый стик — наклон","Left stick — tilt"],TRI:["Выйти","Exit"],TOUCH:["Карта","Map"]},
+   plane:{R2:["Тяга","Throttle up"],L2:["Сброс тяги / тормоз","Throttle down / brake"],SQ:["Рыскание влево","Yaw left"],CIR:["Рыскание вправо","Yaw right"],L3:["Шасси","Landing gear"],TRI:["Выйти / прыгнуть с парашютом","Exit / bail out"],TOUCH:["Карта","Map"]}
+  };
+  var SYM={L2:"L2",R2:"R2",L1:"L1",R1:"R1",TOUCH:"▭",OPT:"≡",UP:"↑",DOWN:"↓",LEFT:"←",RIGHT:"→",TRI:"△",SQ:"□",CIR:"○",X:"✕",L3:"L3",R3:"R3"};
+  var mode="foot",sel=null,info=document.getElementById("info");
+  function renderInfo(){var lang=html.getAttribute("data-lang")==="en"?1:0,m=C[mode];
+    document.querySelectorAll(".bt").forEach(function(g){var b=g.dataset.b;g.classList.toggle("has",!!m[b]);g.classList.toggle("dim",!m[b]);g.classList.toggle("sel",b===sel)});
+    if(sel&&m[sel]){info.innerHTML='<div class="big">'+SYM[sel]+'</div><h4>'+m[sel][lang]+'</h4><p>'+(lang?"Mode: ":"Режим: ")+document.querySelector('[data-mode="'+mode+'"] [lang="'+(lang?"en":"ru")+'"]').textContent+'</p>'}
+    else{var h=lang?"Tap any highlighted button":"Нажми на любую подсвеченную кнопку";var li="";Object.keys(m).slice(0,6).forEach(function(k){li+='<li><span class="k">'+SYM[k]+'</span><span>'+m[k][lang]+'</span></li>'});info.innerHTML='<h4>'+h+'</h4><ul>'+li+'</ul>'}}
+  document.querySelectorAll(".bt").forEach(function(g){function f(){sel=g.dataset.b;renderInfo()}g.addEventListener("click",f);g.addEventListener("mouseenter",function(){if(matchMedia("(hover:hover)").matches)f()});g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}})});
+  document.querySelectorAll("[data-mode]").forEach(function(b){b.onclick=function(){mode=b.dataset.mode;sel=null;document.querySelectorAll("[data-mode]").forEach(function(x){x.setAttribute("aria-pressed",String(x===b))});renderInfo()}});
+
+  // копирование
+  document.querySelectorAll(".copy").forEach(function(b){b.onclick=function(){var t=b.parentNode.querySelector("pre").innerText.replace(/\s+#.*$/gm,"");(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent="✓";b.classList.add("ok");setTimeout(function(){b.textContent="Copy";b.classList.remove("ok")},1400)}).catch(function(){})}});
+
+  // счётчики
+  var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)return;cio.unobserve(e.target);var el=e.target,to=+el.dataset.count;if(rm||to<2)return;var t0=performance.now();function tick(t){var p=Math.min(1,(t-t0)/900);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tick)}requestAnimationFrame(tick)})},{threshold:.6});
+  document.querySelectorAll("[data-count]").forEach(function(el){cio.observe(el)});
+
+  // пословные субтитры в телефоне
+  var W=["WAIT","WHAT","IS","HE","DOING?!"],wi=0,sw=document.getElementById("subw");
+  if(!rm)setInterval(function(){wi=(wi+1)%W.length;sw.textContent=W[wi]},420);
+
+  // скачать: определяем ОС (?os=mac|win|other — для проверки)
+  (function(){var dl=document.getElementById("dl");if(!dl)return;
+    var q=(location.search.match(/[?&]os=(mac|win|other)/)||[])[1];
+    var ua=navigator.userAgent||"",p=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||"";
+    var mobile=/iPhone|iPad|iPod|Android/i.test(ua)||(/Mac/i.test(p)&&navigator.maxTouchPoints>1);
+    var os=q||(mobile?"other":/Mac/i.test(p)||/Mac OS X/.test(ua)?"mac":/Win/i.test(p)||/Windows/.test(ua)?"win":"other");
+    dl.setAttribute("data-os",os);
+    var det=document.getElementById("src");
+    document.getElementById("srcLink").addEventListener("click",function(e){e.preventDefault();det.open=true;det.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"})});
+    if(location.hash==="#src")det.open=true;
+    // версия/размер из GitHub API (тихо, если нет сети/лимит)
+    if(!window.fetch)return;
+    var NAMES={mac:"ApofizPlay-GTA6-mac-arm64.dmg",win:"ApofizPlay-GTA6-win-x64-Setup.exe"};
+    function hs(n){if(!n)return"";var u=["B","KB","MB","GB"],i=0;while(n>=1024&&i<3){n/=1024;i++}return(i<2||n>=100?n.toFixed(0):n.toFixed(1))+" "+u[i]}
+    fetch("https://api.github.com/repos/blobus01/GTA6-PS5-AI-by-Apofiz/releases/latest",{headers:{Accept:"application/vnd.github+json"}}).then(function(r){
+      if(r.status===404){dl.classList.add("norel");dl.querySelectorAll(".dlb,.dl-swap").forEach(function(a){a.href="#src";a.addEventListener("click",function(e){e.preventDefault();det.open=true;det.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"})})});return null}
+      return r.ok?r.json():null}).then(function(j){if(!j)return;
+      if(j.tag_name)document.getElementById("relv").textContent=j.tag_name;
+      if(j.published_at)document.getElementById("reld").textContent=j.published_at.slice(0,10);
+      var by={};(j.assets||[]).forEach(function(a){by[a.name]=a});
+      Object.keys(NAMES).forEach(function(k){var a=by[NAMES[k]];
+        if(a){dl.querySelectorAll('[data-size="'+k+'"]').forEach(function(s){s.textContent=hs(a.size)})}
+        else if(j.html_url){dl.querySelectorAll('[data-asset="'+k+'"]').forEach(function(b){b.href=j.html_url})}})
+    }).catch(function(){})})();
+
+  // PS5: переключатели щёлкают при появлении карточки
+  if(rm)document.querySelectorAll(".pcard").forEach(function(c){c.classList.add("in")});
+
+  // степпер «после установки»
+  (function(){var ol=document.getElementById("fsteps");if(!ol)return;var li=[].slice.call(ol.children),k=0,t=null,hold=0,vis=false;
+    function set(n){k=n;ol.style.setProperty("--k",n);li.forEach(function(x,i){x.classList.toggle("done",i<n);x.classList.toggle("on",i===n)})}
+    function tick(){if(Date.now()<hold)return;set(k>=li.length-1?0:k+1)}
+    function run(){clearInterval(t);if(rm||!vis)return;t=setInterval(function(){if(k===li.length-1){clearInterval(t);setTimeout(function(){if(vis&&Date.now()>=hold){set(0);run()}},2200)}else tick()},1300)}
+    li.forEach(function(x,i){x.querySelector("button").addEventListener("click",function(){hold=Date.now()+6000;set(i);clearInterval(t);setTimeout(run,6000)})});
+    set(rm?li.length-1:0);
+    new IntersectionObserver(function(es){vis=es[0].isIntersecting;if(vis)run();else clearInterval(t)},{threshold:.4}).observe(ol)})();
+
+  window.__ready=true;setLang(langPref);
+})();
+</script>
+</body>
+</html>

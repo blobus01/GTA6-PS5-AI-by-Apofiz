@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>GTA6 PS5 AI Setup</title>
+<link rel="icon" href="/setup/assets/apofiz-mark.png">
+<link rel="stylesheet" href="/setup/assets/setup.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/setup" aria-label="Apofiz">
+    <img class="mark" src="/setup/assets/apofiz-mark.png" alt="">
+    <img class="word" src="/setup/assets/apofiz-wordmark-white.png" alt="Apofiz">
+  </a>
+  <div class="title"><b>GTA6 PS5 AI</b> · <span data-i18n="setup">Setup</span></div>
+  <div class="spacer"></div>
+  <a class="toplink" href="/" data-i18n="openRemote">Open remote</a>
+  <div class="seg" role="group" aria-label="Language">
+    <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="rail" aria-label="Setup steps">
+    <ol id="rail"></ol>
+    <div class="railbar"><i id="railbar"></i></div>
+  </nav>
+  <main>
+    <div class="pills" id="pills" aria-live="polite"></div>
+    <section class="card">
+      <div class="step" id="step"></div>
+      <div class="foot">
+        <button class="btn ghost" id="back" type="button"></button>
+        <span class="hint" id="hint"></span>
+        <span class="spacer"></span>
+        <button class="btn primary" id="next" type="button"></button>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="/setup/assets/app.js"></script>
+</body>
+</html>

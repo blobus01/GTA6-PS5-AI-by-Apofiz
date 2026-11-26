@@ -22,3 +22,5 @@ shots/
 *.pt
 .mcp.json
 nitro_*.log
+dist/
+site/dist/

@@ -17,6 +17,7 @@ from pathlib import Path
 from aiohttp import WSMsgType, web
 
 import ddp
+import setup_api
 import store
 from ps5native import NativeSession, register
 from psn import PSN, PSNError
@@ -386,7 +387,7 @@ async def index(_req):
 
 
 async def state(_req):
-    return web.json_response(remote.snapshot())
+    return web.json_response({**remote.snapshot(), **setup_api.state_hint()})
 
 
 async def debug(_req):
@@ -643,6 +644,7 @@ def main() -> None:
         web.post("/api/pilot/hint", pilot_hint),
         web.get("/api/agent-log", agent_log),
     ])
+    setup_api.register(app, lambda: remote)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
     where = PS5_HOST or "auto-discovery"

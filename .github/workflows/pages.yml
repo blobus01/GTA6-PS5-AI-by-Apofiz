@@ -1,0 +1,61 @@
+name: pages
+
+# Builds the landing page (site/src.html -> site/dist) and deploys it to GitHub Pages.
+# Runs when the site changes, when a release is published (to refresh version/size
+# shown on the download button) and on demand.
+# Pages must be enabled once in Settings -> Pages -> Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  release:
+    types: [published, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Latest release metadata (optional)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f site/release.json ]; then
+            gh api "repos/${{ github.repository }}/releases/latest" > site/release.json 2>/dev/null \
+              || { echo "no published release yet"; rm -f site/release.json; }
+          fi
+
+      - name: Build
+        run: python site/build.py --multi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
