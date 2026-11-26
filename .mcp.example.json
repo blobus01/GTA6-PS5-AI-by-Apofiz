@@ -1,0 +1,1 @@
+{"mcpServers":{"ps5":{"command":"./.venv/bin/python","args":["./mcp_server.py"]}}}

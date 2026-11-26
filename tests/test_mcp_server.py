@@ -26,6 +26,12 @@ STATE = {"power": "on", "app": "Terraria", "linked": True}
 
 # Expected hints per tool: readOnly, destructive, idempotent, openWorld.
 EXPECTED_HINTS = {
+    "gta_drive": (False, True, False, True),
+    "gta_walk": (False, True, False, True),
+    "gta_enter_vehicle": (False, True, False, True),
+    "gta_combo": (False, True, False, True),
+    "gta_say": (False, False, False, False),
+    "gta_action_log": (True, False, True, True),
     "ps5_look": (True, False, True, True),
     "ps5_play": (False, True, False, True),
     "ps5_press": (False, True, False, True),

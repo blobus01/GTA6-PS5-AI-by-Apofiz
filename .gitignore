@@ -15,3 +15,10 @@ dsh-bundle/
 !.claude/
 .claude/*
 !.claude/skills/
+
+# GTA6 PS5 AI — локальное
+logs/
+shots/
+*.pt
+.mcp.json
+nitro_*.log

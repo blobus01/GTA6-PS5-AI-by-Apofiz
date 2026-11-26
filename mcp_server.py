@@ -284,5 +284,60 @@ def psn_store_search(query: str, limit: int = 10) -> dict:
     return _json("GET", "/api/psn/store", params={"q": query, "limit": limit}, timeout=60)
 
 
+
+# ---------------------------------------------------------------- GTA 6 (agent channel)
+import gta_tools as _gta
+
+
+def _run(steps: list[dict], frames: int, kind: str, **meta) -> list:
+    _gta.log(kind, **meta)
+    return ps5_play([Step(**st) for st in steps], frames=frames, enhance=False, width=960)
+
+
+@mcp.tool(annotations=INPUT)
+def gta_drive(throttle: float, steer: float = 0.0, seconds: float = 2.0, frames: int = 3) -> list:
+    """Drive a vehicle in GTA 6 for a short burst (max 5 s), then return frames.
+
+    Args:
+        throttle: 1 full gas (R2), negative brakes/reverses (L2), 0 coasts.
+        steer: -1 full left, 1 full right.
+        seconds: 0.2 to 5.
+        frames: frames captured during the burst.
+    """
+    return _run(_gta.drive_steps(throttle, steer, seconds), frames, "drive", throttle=throttle, steer=steer, seconds=seconds)
+
+
+@mcp.tool(annotations=INPUT)
+def gta_walk(x: float, y: float, seconds: float = 1.5, sprint: bool = False, frames: int = 3) -> list:
+    """Move on foot with the left stick (max 5 s). Up is y=-1. sprint holds CROSS."""
+    return _run(_gta.walk_steps(x, y, seconds, sprint), frames, "walk", x=x, y=y, seconds=seconds, sprint=sprint)
+
+
+@mcp.tool(annotations=INPUT)
+def gta_enter_vehicle(frames: int = 3) -> list:
+    """Get in / out of the nearest vehicle (TRIANGLE), then wait for the animation."""
+    return _run([{"hold": ["TRIANGLE"], "ms": 150}, {"ms": 2500}], frames, "enter_vehicle")
+
+
+@mcp.tool(annotations=INPUT)
+def gta_combo(buttons: list[Button], interval_ms: int = 80, frames: int = 2) -> list:
+    """Press a button sequence at machine speed (cheat codes, quick menus)."""
+    return _run(_gta.combo_steps(list(buttons), interval_ms), frames, "combo", buttons=list(buttons))
+
+
+@mcp.tool(annotations=_hints(read_only=False, destructive=False, idempotent=False, open_world=False))
+def gta_say(thought: str, tag: Literal["", "crash", "police", "fail", "win", "funny", "mission"] = "") -> str:
+    """Say what you are thinking/doing in one short line. It is shown live on the stream overlay and voiced.
+    Add a tag on notable moments (crash, police, fail, win, funny, mission) - shorts are cut from these markers."""
+    _gta.log("say", text=thought, tag=tag)
+    return "ok"
+
+
+@mcp.tool(annotations=LOOK)
+def gta_action_log(limit: int = 20) -> list[dict]:
+    """Last actions and thoughts of the agent - the public receipt that the AI is playing."""
+    return _gta.tail(limit)
+
+
 if __name__ == "__main__":
     mcp.run("stdio")

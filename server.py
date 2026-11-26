@@ -561,6 +561,57 @@ async def on_cleanup(app):
     remote.disconnect()
 
 
+OVERLAY_HTML = """<!doctype html><meta charset=utf-8><title>AI overlay</title>
+<style>html,body{margin:0;background:transparent;font:600 26px -apple-system,Inter,sans-serif;color:#fff}
+#box{position:fixed;left:24px;bottom:24px;width:560px;background:rgba(14,17,22,.78);border-radius:18px;padding:16px 20px;backdrop-filter:blur(8px)}
+.h{font-size:15px;letter-spacing:.08em;color:#4aa3ff;text-transform:uppercase;margin-bottom:8px}
+.say{font-size:24px;line-height:1.3;margin:4px 0}.act{font:500 15px ui-monospace,Menlo,monospace;color:#9fb0c3;margin:2px 0}
+.tag{display:inline-block;background:#007AFF;border-radius:8px;padding:1px 8px;font-size:14px;margin-right:6px}</style>
+<div id=box><div class=h>ИИ думает · AI is thinking</div><div id=list></div></div>
+<script>
+async function tick(){try{const r=await fetch('/api/agent-log?limit=8');const a=await r.json();
+const say=a.filter(x=>x.kind==='say').slice(-2),act=a.filter(x=>x.kind!=='say').slice(-4);
+document.getElementById('list').innerHTML=say.map(x=>'<div class=say>'+(x.tag?'<span class=tag>'+x.tag+'</span>':'')+x.text.replace(/</g,'&lt;')+'</div>').join('')+
+act.map(x=>'<div class=act>▸ '+x.kind+' '+JSON.stringify(Object.fromEntries(Object.entries(x).filter(([k])=>!['at','t','kind'].includes(k))))+'</div>').join('')}catch(e){}}
+setInterval(tick,700);tick();</script>"""
+
+
+async def overlay(request: web.Request) -> web.Response:
+    return web.Response(text=OVERLAY_HTML, content_type="text/html")
+
+
+async def agent_log(request: web.Request) -> web.Response:
+    import gta_tools
+    return web.json_response(gta_tools.tail(int(request.query.get("limit", "20"))))
+
+
+async def pilot_start(request: web.Request) -> web.Response:
+    import pilot as _p
+    b = await body_of(request)
+    if not await remote.ensure_session():
+        return web.json_response({"ok": False, "error": remote.message})
+    if "pilot" not in request.app:
+        request.app["pilot"] = _p.Pilot(remote)
+    return web.json_response(request.app["pilot"].start(b.get("mode", "goto"), float(b.get("seconds", 120)), bool(b.get("sprint", True))))
+
+
+async def pilot_stop(request: web.Request) -> web.Response:
+    p = request.app.get("pilot")
+    return web.json_response(p.stop() if p else {"ok": True})
+
+
+async def pilot_hint(request: web.Request) -> web.Response:
+    p = request.app.get("pilot")
+    if p:
+        p.set_hint(await body_of(request))
+    return web.json_response({"ok": bool(p)})
+
+
+async def pilot_status(request: web.Request) -> web.Response:
+    p = request.app.get("pilot")
+    return web.json_response((p or request.app.setdefault("pilot", __import__("pilot").Pilot(remote))).status)  # hud даже без запуска пилота
+
+
 def main() -> None:
     global remote
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -585,6 +636,12 @@ def main() -> None:
         web.get("/api/psn/library", psn_library),
         web.get("/api/psn/store", psn_store),
         web.get("/ws", ws),
+        web.get("/overlay", overlay),
+        web.post("/api/pilot/start", pilot_start),
+        web.post("/api/pilot/stop", pilot_stop),
+        web.get("/api/pilot", pilot_status),
+        web.post("/api/pilot/hint", pilot_hint),
+        web.get("/api/agent-log", agent_log),
     ])
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)

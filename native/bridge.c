@@ -11,7 +11,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef _WIN32
 #define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __attribute__((visibility("default")))
+#endif
 
 typedef int (*Ps5VideoCb)(const uint8_t *buf, size_t size, int32_t frames_lost, int recovered, void *user);
 typedef void (*Ps5EventCb)(int type, int code, const char *text, void *user);

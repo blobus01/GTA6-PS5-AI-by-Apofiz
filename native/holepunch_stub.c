@@ -2,6 +2,10 @@
 // session code references. ps5-remote always connects on the local network,
 // so holepunch_session is always NULL and these are never reached.
 
+#ifndef _WIN32
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif
 #include <chiaki/remote/holepunch.h>
 #include <string.h>
 

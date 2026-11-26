@@ -1,5 +1,6 @@
-# ps5-agent-remote
+# GTA6 PS5 AI by Apofiz — правила для агентов
 
-## Git
-
-- Follow the Git law in Jeff's `~/AGENTS.md` (2026-11-03). `prod` is the default branch and the finished product. All work happens on `dev`. Branch `task/<id>-<slug>` from `origin/dev`, open the PR into `dev`, never push or force-push `prod`, `main` or `dev`, and end every commit with `Task:`, `Agent:` and `Agent-Session:` trailers. `prod` changes only through a promotion PR from `dev`, and every merge waits for Jeff's approval.
+- Основная ветка `main`. Коммиты небольшие, по делу.
+- Никогда не коммитить секреты: `.env.local`, `~/.ps5-remote/`, PSN npsso, ключи консоли, логи, скриншоты.
+- Перед пушем: `.venv/bin/python -m pytest -q tests` и проверка на секреты.
+- Апстрим (основа удалённого пульта): https://github.com/Jeff-Kazzee/ps5-agent-remote (MIT) — remote `upstream`.

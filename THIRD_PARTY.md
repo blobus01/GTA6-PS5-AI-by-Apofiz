@@ -28,3 +28,13 @@ holepunch code with `native/holepunch_stub.c`. See
 
 The DDP discovery and wake message formats follow chiaki-ng and
 pyremoteplay (https://github.com/ktnrg45/pyremoteplay, GPL-3.0).
+
+## GTA6 PS5 AI additions
+
+| Component | License | Source |
+|---|---|---|
+| Ultralytics YOLO11 (`ultralytics`, `yolo11n.pt` weights, downloaded on first run) | AGPL-3.0 | https://github.com/ultralytics/ultralytics |
+| PyTorch | BSD-3-Clause | https://github.com/pytorch/pytorch |
+| Claude Code CLI (`claude`, the bot brain; uses your own Claude subscription) | Anthropic terms | https://claude.com/claude-code |
+
+Grand Theft Auto VI is a trademark of Rockstar Games / Take-Two Interactive. PlayStation and PS5 are trademarks of Sony Interactive Entertainment. This project is not affiliated with or endorsed by them.

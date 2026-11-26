@@ -21,7 +21,8 @@ VENDOR = ROOT / "vendor"
 CHIAKI = VENDOR / "chiaki-ng-src"
 BUILD = ROOT / "native" / "build"
 GEN = BUILD / "gen"
-OUT = ROOT / "native" / "ps5bridge.dll"
+IS_MAC = sys.platform == "darwin"
+OUT = ROOT / "native" / ("libps5bridge.dylib" if IS_MAC else "ps5bridge.dll")
 
 # libchiaki's ecdh.c and gkcrypt.c use the Mbed TLS 2.x API (ctx.d, 6-arg
 # mbedtls_gcm_starts). 3.6 fails to compile them (checked 2026-11-02).
@@ -130,13 +131,20 @@ def build() -> None:
     defs = [
         "CHIAKI_LIB_ENABLE_MBEDTLS", "PB_C99_STATIC_ASSERT", "CHIAKI_VERSION_MAJOR=1",
         "CHIAKI_VERSION_MINOR=10", "CHIAKI_VERSION_PATCH=0", 'CHIAKI_VERSION="1.10.0"',
-        "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "NDEBUG",
+        "NDEBUG",
         'MBEDTLS_USER_CONFIG_FILE="ps5_mbedtls_user.h"',
     ]
-    cmd = [PY, "-m", "ziglang", "cc", "-target", "x86_64-windows-gnu", "-shared", "-O2",
-           "-std=gnu11", "-w", "-o", OUT]
+    if IS_MAC:
+        # Native macOS build with Apple clang (zig cc lacks the macOS SDK frameworks here).
+        cmd = ["clang", "-dynamiclib", "-O2", "-std=gnu11", "-w", "-fvisibility=default", "-o", OUT,
+               "-install_name", "@rpath/libps5bridge.dylib", "-framework", "CoreServices"]
+    else:
+        defs += ["_WIN32_WINNT=0x0A00", "WINVER=0x0A00"]
+        cmd = [PY, "-m", "ziglang", "cc", "-target", "x86_64-windows-gnu", "-shared", "-O2",
+               "-std=gnu11", "-w", "-o", OUT]
     cmd += [f"-I{i}" for i in incs] + [f"-D{d}" for d in defs] + sources()
-    cmd += ["-lws2_32", "-lwsock32", "-lbcrypt", "-liphlpapi", "-ladvapi32"]
+    if not IS_MAC:
+        cmd += ["-lws2_32", "-lwsock32", "-lbcrypt", "-liphlpapi", "-ladvapi32"]
     run(cmd)
     print("built", OUT, OUT.stat().st_size, "bytes")
 
