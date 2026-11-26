@@ -10,7 +10,7 @@
 <h1 align="center">GTA6 PS5 AI by Apofiz</h1>
 
 <p align="center">
-  <b>An AI agent that plays Grand Theft Auto VI on a real PS5 — from your Mac.</b><br>
+  <b>An AI agent that plays Grand Theft Auto VI on a real PS5 — from your Mac or Windows PC.</b><br>
   It sees the screen, steals cars, hotwires them, fights back, escapes the police and drives to missions on its own.<br>
   Built by <a href="https://apofiz.com">Apofiz</a>.
 </p>
@@ -40,7 +40,7 @@
 
 - **Plays on a real console.** Connects to your PS5 over Sony Remote Play (chiaki-ng), reads the video stream and presses gamepad buttons — no mods, no PC version.
 - **Brain.** Claude (via the Claude Code CLI and *your own* subscription) looks at a frame every ~2–3 s and decides: find a car, break in, fight, flee, drive.
-- **Reflexes (no LLM, ~1 ms).** Reads health, wanted stars, WASTED and damage tint straight from HUD pixels; YOLO11 on Apple Silicon (MPS) finds cars and people at 15 Hz. Being shot → it shoots back immediately.
+- **Reflexes (no LLM, ~1 ms).** Reads health, wanted stars, WASTED and damage tint straight from HUD pixels; YOLO11 finds cars and people at 15 Hz (Apple Silicon GPU on Mac, NVIDIA GPU or CPU on Windows). Being shot → it shoots back immediately.
 - **Car theft like a human.** WAiNK scanner first, skips keyless (Clone Key) and tracked cars, carjacks drivers, Slim Jim (△ + right-stick circles), smashes windows (□), hotwires with the L/R semicircle mini-game.
 - **Drives to missions.** Sets a waypoint on the map (pink story icons), then uses the in-game Quick Navigation autopilot; falls back to its own driving if stuck.
 - **Knows the controls.** A compact cheat-sheet for the bot plus a full knowledge base (on foot, combat, every vehicle type, police, phone, missions) in [`knowledge/`](knowledge/).
@@ -91,7 +91,7 @@ Miss any one of these and the app can't connect:
 <details>
 <summary>macOS, Apple Silicon — five steps, about 20 minutes</summary>
 
-1. **PS5:** Settings → System → Remote Play → enable. Same home network as the Mac (cable recommended — Wi-Fi drops frames).
+1. **PS5:** Settings → System → Remote Play → enable. Same home network as the Mac/PC (cable recommended — Wi-Fi drops frames).
 2. **Install:**
    ```bash
    git clone https://github.com/blobus01/GTA6-PS5-AI-by-Apofiz.git && cd GTA6-PS5-AI-by-Apofiz
